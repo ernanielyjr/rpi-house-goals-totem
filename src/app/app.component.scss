@@ -1,0 +1,33 @@
+.loading {
+  // background: radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%,rgba(0,0,0,0.3) 2%,rgba(0,0,0,0.7) 100%);
+  background: linear-gradient(-45deg, rgba(238, 118, 82, 0.8), rgba(231, 60, 126, 0.8), rgba(35, 165, 213, 0.8), rgba(35, 213, 171, 0.8));
+  background-size: 400% 400%;
+  animation: Gradient 10s ease infinite;
+
+  text-align: center;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  vertical-align: middle;
+  color: #FFF;
+  font-size: 30px;
+  font-weight: 100;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes Gradient {
+  0% {
+    background-position: 0% 50%
+  }
+  50% {
+    background-position: 100% 50%
+  }
+  100% {
+    background-position: 0% 50%
+  }
+}
