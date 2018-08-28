@@ -1,18 +1,104 @@
 <div *ngIf="loading" class="loading" [@enterAnimation]>loading...</div>
 
-<button (click)="refreshData()" [disabled]="loading">Refresh</button>
+<div class="container-fluid">
+  <h1>Meta de Despesas</h1>
+  <h3 class="text-center">
+    <a class="btn btn-sm btn-outline-info" href="javascript:void(0);" (click)="prevMonth()">&larr;</a>
+    {{ currentMonth }}
+    <a class="btn btn-sm btn-outline-info" href="javascript:void(0);" (click)="nextMonth()">&rarr;</a>
+  </h3>
 
-<table style="width: 100%">
-  <tr>
-    <td style="vertical-align: top; width: 50%;">categories: {{ categories.length }}</td>
-    <td style="vertical-align: top; width: 50%;">transactions: {{ transactions.length }}</td>
-  </tr>
-  <tr>
-    <td style="vertical-align: top; width: 50%;">
-      <pre>{{ categories | json }}</pre>
-    </td>
-    <td style="vertical-align: top; width: 50%;">
-      <pre>{{ transactions | json }}</pre>
-    </td>
-  </tr>
-</table>
+  <div class="row card-list clearfix">
+    <div class="col item" *ngIf="total">
+      <div class="card text-center" [class.bg-success]="total.percent < 75" [class.bg-warning]="total.percent >= 75 && total.percent < 95" [class.bg-danger]="total.percent >= 95">
+        <div class="card-header text-light">TOTAL</div>
+        <div class="card-body">
+          <circle-progress
+          [renderOnClick]="false"
+          [percent]="total.percent"
+          [radius]="60"
+          [space]="-10"
+          [outerStrokeWidth]="10"
+          [outerStrokeColor]="'#000'"
+          [titleColor]="'#FFF'"
+          [unitsColor]="'rgba(255, 255, 255, 0.7)'"
+          [innerStrokeColor]="'rgba(0, 0, 0, 0.2)'"
+          [innerStrokeWidth]="10"
+          [animateTitle]="false"
+          [animationDuration]="300"
+          [showBackground]="false"
+          [responsive]="true"
+          [showSubtitle]="false"
+          [clockwise]="false"
+          ></circle-progress>
+          <div class="text-right text-light disabled">
+            R$ {{ (total.goal || 0) | number:'1.2-2' }}
+            <br />
+            -
+            R$ {{ (total.amount || 0) | number:'1.2-2' }}
+          </div>
+        </div>
+        <div class="card-footer text-right text-light">
+          =
+          R$ {{ (total.balance || 0) | number:'1.2-2' }}
+        </div>
+      </div>
+    </div>
+
+    <div class="col item" *ngFor="let goal of goals">
+      <div class="card text-center">
+        <div class="card-header">{{ goal.name }}</div>
+        <div class="card-body">
+          <circle-progress
+          [renderOnClick]="false"
+          [percent]="goal.percent"
+          [radius]="60"
+          [space]="-10"
+          [outerStrokeWidth]="10"
+          [outerStrokeColor]="goal.color"
+          [innerStrokeColor]="'rgba(0, 0, 0, 0.05)'"
+          [innerStrokeWidth]="10"
+          [animateTitle]="false"
+          [animationDuration]="300"
+          [showBackground]="false"
+          [responsive]="true"
+          [showSubtitle]="false"
+          [clockwise]="false"
+          ></circle-progress>
+          <div class="text-right disabled">
+            <span class="text-primary">
+              R$ {{ (goal.goal || 0) | number:'1.2-2' }}
+            </span>
+            <br />
+            <span class="text-danger">
+              -
+              R$ {{ (goal.amount || 0) | number:'1.2-2' }}
+            </span>
+          </div>
+        </div>
+        <div class="card-footer text-right text-success">
+          =
+          R$ {{ (goal.balance || 0) | number:'1.2-2' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ul class="row transactions-list">
+    <ng-container *ngFor="let goal of goals">
+      <li class="col" *ngIf="goal.transactions && goal.transactions.length">
+        <div class="goal-title">
+          <span class="description">{{ goal.name | uppercase }}</span>
+          <span class="amount">{{ (goal.amount || 0) | number:'1.2-2' }}</span>
+        </div>
+        <ul>
+          <li *ngFor="let transaction of goal.transactions">
+            <span class="description">{{ transaction.description | uppercase }}</span>
+            <span class="amount">{{ (transaction.amount || 0) | number:'1.2-2' }}</span>
+          </li>
+        </ul>
+      </li>
+    </ng-container>
+  </ul>
+
+</div>
