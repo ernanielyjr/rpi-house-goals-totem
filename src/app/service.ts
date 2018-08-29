@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { concatAll, reduce, tap, mergeMap, map, filter, zip, zipAll } from 'rxjs/operators';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
+import { concatAll, concatMap, filter, map, mergeMap, reduce } from 'rxjs/operators';
 
-const BASE_URL = 'http://localhost:3000/rest/v2'; // FIXME: pegar do parametro do build???
+// FIXME: pegar porta do parametro do build???
+const BASE_URL = 'http://localhost:3000/rest/v2';
 
 @Injectable()
 export class OrganizzeService {
@@ -44,7 +45,7 @@ export class OrganizzeService {
     .pipe(
       concatAll(),
       concatAll(),
-      filter(item  => item.amount_cents < 0),
+      filter(item => item.amount_cents < 0),
       map((item) => {
         const newItem: ViewObject.Transaction = {
           id:          item.id,
@@ -53,6 +54,7 @@ export class OrganizzeService {
           paid:        item.paid,
           amount:      Math.abs(item.amount_cents) / 100,
           category_id: item.category_id,
+          card_name:   item.card_name,
         };
         return newItem;
       }),
@@ -70,12 +72,30 @@ export class OrganizzeService {
     return all;
   }
 
+  private getTransactionsWithPage(
+    start: string,
+    end: string,
+    page: number,
+    oldItems: Responses.Transaction[]
+  ): Observable<Responses.Transaction[]> {
+    return this.http
+    .get<Responses.Transaction[]>(`${BASE_URL}/transactions?start_date=${start}&end_date=${end}&page=${page}`)
+    .pipe(
+      concatMap((items) => {
+        const newItems = oldItems.concat(items);
+        if (items.length >= 100) {
+          return this.getTransactionsWithPage(start, end, page + 1, newItems);
+        }
+        return of(newItems);
+      }),
+    );
+  }
+
   private getTransactions(startDate: Date, endDate: Date) {
     const start = this.formatDate(startDate);
     const end = this.formatDate(endDate);
 
-    return this.http
-    .get<Responses.Transaction[]>(`${BASE_URL}/transactions?start_date=${start}&end_date=${end}`)
+    return this.getTransactionsWithPage(start, end, 1, [])
     .pipe(
       concatAll(),
       filter(item =>
@@ -110,6 +130,10 @@ export class OrganizzeService {
         const isBetween = startDate <= itemDate && itemDate <= endDate;
         return isBetween;
       }),
+      map((item) => {
+        item.card_name = card.name;
+        return item;
+      }),
       // tap(item => console.log('getCardInvoices', item)),
     );
   }
@@ -120,6 +144,12 @@ export class OrganizzeService {
     .pipe(
       map(invoice => invoice.transactions),
       filter(transactions => !!transactions.length),
+      map((transactions) => {
+        return transactions.map((item) => {
+          item.card_name = invoice.card_name;
+          return item;
+        });
+      }),
       // tap(item => console.log('getInvoiceTransactions', item)),
     );
   }

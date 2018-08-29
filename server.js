@@ -9,7 +9,7 @@ const app = express();
 const cache = apicache.middleware;
 
 const { ZZE_USER, ZZE_KEY, CACHE_TIME } = process.env;
-const port = process.env.PORT || '80';
+const port = process.env.PORT || '3000';
 
 if (!ZZE_USER || !ZZE_KEY) {
   throw('Missing ZZE_USER or ZZE_KEY in environment!');

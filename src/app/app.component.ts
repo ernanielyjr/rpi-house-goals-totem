@@ -34,7 +34,6 @@ export class AppComponent implements OnInit {
   private endDate = this.getLastDayOfMonth(currentDate);
 
   public loading = false;
-  public currentMonth = `${MONTHS_NAMES[this.startDate.getMonth() + 1]}/${this.startDate.getFullYear()}`;
   public total: ViewObject.Goal;
   public goals: ViewObject.Goal[] = [];
 
@@ -44,6 +43,10 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.chainFactory().subscribe();
+  }
+
+  public get currentMonth() {
+    return `${MONTHS_NAMES[this.startDate.getMonth()]}/${this.startDate.getFullYear()}`;
   }
 
   private changeMonth(month: number) {
@@ -119,7 +122,6 @@ export class AppComponent implements OnInit {
             percent: (amountSum * 100) / goalSum,
           };
         }, {} as ViewObject.Goal);
-        this.currentMonth = `${MONTHS_NAMES[this.startDate.getMonth() + 1]}/${this.startDate.getFullYear()}`;
         // console.log('chainFactory_final', goals);
       }),
       finalize(() => setTimeout(() => this.loading = false, 300)),

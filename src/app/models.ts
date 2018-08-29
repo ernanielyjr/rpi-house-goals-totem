@@ -6,6 +6,7 @@ namespace ViewObject {
     paid: boolean;
     amount: number;
     category_id: number;
+    card_name?: string;
   }
 
   export interface Goal extends Responses.Category {
@@ -66,6 +67,7 @@ namespace Responses {
     previous_balance_cents: number;
     credit_card_id: number;
     transactions?: Transaction[];
+    card_name?: string;
   }
 
   export interface Transaction {
@@ -92,5 +94,6 @@ namespace Responses {
     oposite_account_id?: number;
     created_at: string;
     updated_at: string;
+    card_name?: string;
   }
 }

@@ -93,7 +93,10 @@
         </div>
         <ul>
           <li *ngFor="let transaction of goal.transactions">
-            <span class="description">{{ transaction.description | uppercase }}</span>
+            <ng-container *ngIf="transaction.card_name">*</ng-container>
+            <span class="description" title="{{ transaction.date | date:'dd/MM/yyyy' }} - {{ transaction.card_name }}">
+              {{ transaction.description | uppercase }}
+            </span>
             <span class="amount">{{ (transaction.amount || 0) | number:'1.2-2' }}</span>
           </li>
         </ul>
