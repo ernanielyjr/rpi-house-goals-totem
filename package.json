@@ -1,12 +1,11 @@
 {
   "name": "goals-totem",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
-    "ng": "ng",
     "start": "ng build --prod && node server.js",
-    "serve": "ng serve",
-    "build": "ng build",
-    "nodemon": "nodemon ./server.js --watch ./dist"
+    "serve-dev": "concurrently --kill-others \"npm run frontend\" \"npm run backend\"",
+    "frontend": "ng build --watch",
+    "backend": "nodemon ./server.js --watch ./dist --watch server.js --watch package.json"
   },
   "private": true,
   "dependencies": {
@@ -28,7 +27,6 @@
     "express": "^4.16.3",
     "http-proxy-middleware": "^0.18.0",
     "ng-circle-progress": "^1.2.0",
-    "nodemon": "^1.18.4",
     "rxjs": "^6.0.0",
     "zone.js": "~0.8.26"
   },
@@ -39,6 +37,8 @@
     "@angular/language-service": "^6.1.0",
     "@types/node": "~8.9.4",
     "codelyzer": "~4.2.1",
+    "concurrently": "^4.0.1",
+    "nodemon": "^1.18.4",
     "ts-node": "~5.0.1",
     "tslint": "^5.11.0",
     "tslint-config-airbnb": "^5.10.0",
