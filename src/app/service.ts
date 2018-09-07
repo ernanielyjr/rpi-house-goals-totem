@@ -3,8 +3,7 @@ import { Injectable } from '@angular/core';
 import { forkJoin, Observable, of, empty } from 'rxjs';
 import { concatAll, concatMap, filter, map, mergeMap, reduce, catchError } from 'rxjs/operators';
 
-// FIXME: pegar porta do parametro do build???
-const BASE_URL = 'http://localhost:3000/rest/v2';
+const BASE_URL = '/rest/v2';
 
 @Injectable()
 export class OrganizzeService {
