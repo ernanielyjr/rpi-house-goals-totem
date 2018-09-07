@@ -46,7 +46,7 @@
     </div>
 
     <div class="col item" *ngFor="let goal of goals">
-      <div class="card text-center">
+      <div class="card text-center" [class.over]="goal.percent > 100">
         <div class="card-header">{{ goal.name }}</div>
         <div class="card-body">
           <circle-progress

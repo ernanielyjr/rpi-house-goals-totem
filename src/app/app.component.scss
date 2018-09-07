@@ -70,6 +70,22 @@ h1 small {
   max-width: 20%;
 }
 
+.card.over {
+  border-color: #dc3545;
+
+  .card-header {
+    background-color: #dc3545;
+    border-bottom-color: #dc3545;
+    color: #fff;
+  }
+
+  .card-footer {
+    background-color: #dc3545;
+    border-top-color: #dc3545;
+    color: #fff !important;
+  }
+}
+
 .card.bg-dark {
   color: #FFF;
 }

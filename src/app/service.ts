@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { forkJoin, Observable, of } from 'rxjs';
-import { concatAll, concatMap, filter, map, mergeMap, reduce } from 'rxjs/operators';
+import { forkJoin, Observable, of, empty } from 'rxjs';
+import { concatAll, concatMap, filter, map, mergeMap, reduce, catchError } from 'rxjs/operators';
 
 // FIXME: pegar porta do parametro do build???
 const BASE_URL = 'http://localhost:3000/rest/v2';
@@ -104,6 +104,13 @@ export class OrganizzeService {
         && !item.credit_card_id
         && !item.credit_card_invoice_id
       ),
+      map((item) => {
+        if (item.total_installments > 1) {
+          item.description = `${item.description} ${item.installment}/${item.total_installments}`;
+        }
+
+        return item;
+      }),
       reduce((all, item: Responses.Transaction) => all.concat(item), [] as Responses.Transaction[]),
       // tap(item => console.log('getTransactions', item)),
     );
@@ -146,9 +153,16 @@ export class OrganizzeService {
       filter(transactions => !!transactions.length),
       map((transactions) => {
         return transactions.map((item) => {
+          if (item.total_installments > 1) {
+            item.description = `${item.description} ${item.installment}/${item.total_installments}`;
+          }
           item.card_name = invoice.card_name;
           return item;
         });
+      }),
+      catchError((err) => {
+        console.log(err);
+        return empty();
       }),
       // tap(item => console.log('getInvoiceTransactions', item)),
     );
