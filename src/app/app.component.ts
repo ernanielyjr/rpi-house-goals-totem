@@ -1,7 +1,7 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, OnInit } from '@angular/core';
-import { forkJoin, Observable, from, of } from 'rxjs';
-import { concatAll, reduce, tap, filter, map, finalize } from 'rxjs/operators';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { forkJoin, Observable, Subscription, timer } from 'rxjs';
+import { concatAll, finalize, map, reduce, take, tap } from 'rxjs/operators';
 import { OrganizzeService } from './service';
 
 const MONTHS_NAMES = [
@@ -9,7 +9,8 @@ const MONTHS_NAMES = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
 
-const currentDate = new Date();
+const CLOSING_DATE = 10;
+const TIMER_RELOAD =  3 * 60;
 
 @Component({
   selector: 'app-root',
@@ -28,25 +29,46 @@ const currentDate = new Date();
     ])
   ]
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
 
-  private startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-  private endDate = this.getLastDayOfMonth(currentDate);
+  private startDate: Date;
+  private endDate: Date;
+  private countdownTimer: Subscription;
 
+  public countdownPercent: number = 100;
   public loading = false;
   public total: ViewObject.Goal;
   public goals: ViewObject.Goal[] = [];
 
-  constructor (
+  constructor(
     private organizzeService: OrganizzeService
   ) { }
 
   ngOnInit() {
+    this.setInitialDates();
     this.chainFactory().subscribe();
+  }
+
+  ngOnDestroy() {
+    this.resetCountdown();
   }
 
   public get currentMonth() {
     return `${MONTHS_NAMES[this.startDate.getMonth()]}/${this.startDate.getFullYear()}`;
+  }
+
+  private setInitialDates() {
+    this.startDate = new Date(this.getCurrentDate().getFullYear(), this.getCurrentDate().getMonth(), 1);
+    this.endDate = this.getLastDayOfMonth(this.getCurrentDate());
+  }
+
+  private getCurrentDate() {
+    let currentDate = new Date();
+    if (currentDate.getDate() > CLOSING_DATE) {
+      currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    }
+    currentDate.setTime(currentDate.getTime() + currentDate.getTimezoneOffset() * 60 * 1000);
+    return currentDate;
   }
 
   private changeMonth(month: number) {
@@ -69,6 +91,30 @@ export class AppComponent implements OnInit {
     return new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0);
   }
 
+  private startCountdown() {
+    this.resetCountdown();
+
+    this.countdownTimer = timer(0, 1000)
+      .pipe(
+        take(TIMER_RELOAD + 1),
+        map(value => TIMER_RELOAD - value),
+        tap(value => this.countdownPercent = (value * 100) / TIMER_RELOAD),
+        finalize(() => {
+          if (this.countdownPercent === 0) {
+            this.chainFactory().subscribe();
+          }
+        })
+      )
+      .subscribe();
+  }
+
+  private resetCountdown() {
+    if (this.countdownTimer) {
+      this.countdownTimer.unsubscribe();
+    }
+    this.countdownPercent = 100;
+  }
+
   private mergeGroups(final: ViewObject.CategoryHashMap, item: ViewObject.CategoryHashMap): ViewObject.CategoryHashMap {
     if (!final) {
       return item;
@@ -89,43 +135,47 @@ export class AppComponent implements OnInit {
     }, final);
   }
 
-  private chainFactory(): Observable<any> {
+  private chainFactory(): Observable<ViewObject.Goal[]> {
+    this.resetCountdown();
     this.loading = true;
 
     return forkJoin([
       this.organizzeService.getCategories(),
       this.organizzeService.getAllTransactions(this.startDate, this.endDate),
     ])
-    .pipe(
-      concatAll(),
-      reduce(this.mergeGroups, null as ViewObject.CategoryHashMap),
-      reduce((all: ViewObject.Goal[], categoryHashMap: ViewObject.CategoryHashMap) => {
-        const categoryTransaction = Object.keys(categoryHashMap).map((key) => {
-          return categoryHashMap[key] as ViewObject.Goal;
-        });
-        return all.concat(categoryTransaction);
-      }, [] as ViewObject.Goal[]),
-      tap((goals: ViewObject.Goal[]) => {
-        this.goals = goals;
-        this.total = goals.reduce((total, goalItem) => {
-          const goalSum  = (total.goal || 0) + goalItem.goal;
-          const amountSum = (total.amount || 0) + goalItem.amount;
+      .pipe(
+        concatAll(),
+        reduce(this.mergeGroups, null as ViewObject.CategoryHashMap),
+        reduce((all: ViewObject.Goal[], categoryHashMap: ViewObject.CategoryHashMap) => {
+          const categoryTransaction = Object.keys(categoryHashMap).map((key) => {
+            return categoryHashMap[key] as ViewObject.Goal;
+          });
+          return all.concat(categoryTransaction);
+        }, [] as ViewObject.Goal[]),
+        tap((goals: ViewObject.Goal[]) => {
+          this.goals = goals;
+          this.total = goals.reduce((total, goalItem) => {
+            const goalSum = (total.goal || 0) + goalItem.goal;
+            const amountSum = (total.amount || 0) + goalItem.amount;
 
-          return {
-            id: null,
-            name: 'Total',
-            color: 'rgba(0, 0, 0, 0.7)',
-            goal: goalSum,
-            amount: amountSum,
-            balance: goalSum - amountSum,
-            transactions: [],
-            percent: (amountSum * 100) / goalSum,
-          };
-        }, {} as ViewObject.Goal);
-        // console.log('chainFactory_final', goals);
-      }),
-      finalize(() => setTimeout(() => this.loading = false, 300)),
-    );
+            return {
+              id: null,
+              name: 'Total',
+              color: 'rgba(0, 0, 0, 0.7)',
+              goal: goalSum,
+              amount: amountSum,
+              balance: goalSum - amountSum,
+              transactions: [],
+              percent: (amountSum * 100) / goalSum,
+            };
+          }, {} as ViewObject.Goal);
+          // console.log('chainFactory_final', goals);
+        }),
+        finalize(() => {
+          this.startCountdown();
+          setTimeout(() => this.loading = false, 300);
+        })
+      );
   }
 
 }

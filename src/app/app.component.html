@@ -1,5 +1,9 @@
 <div *ngIf="loading" class="loading" [@enterAnimation]>loading...</div>
 
+<div class="progress">
+  <div class="progress-bar bg-success" [ngStyle]="{ 'width': countdownPercent + '%' }"></div>
+</div>
+
 <div class="container-fluid">
   <h1>Meta de Despesas</h1>
   <h3 class="text-center">
