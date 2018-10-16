@@ -1,6 +1,6 @@
 <div *ngIf="loading" class="loading" [@enterAnimation]>loading...</div>
 
-<div class="progress">
+<div class="progress timer">
   <div class="progress-bar bg-success" [ngStyle]="{ 'width': countdownPercent + '%' }"></div>
 </div>
 
@@ -12,100 +12,60 @@
     <a class="btn btn-sm btn-outline-info" href="javascript:void(0);" (click)="nextMonth()">&rarr;</a>
   </h3>
 
-  <div class="row card-list clearfix">
-    <div class="col item" *ngIf="total">
-      <div class="card text-center" [class.bg-success]="total.percent < 75" [class.bg-warning]="total.percent >= 75 && total.percent < 95" [class.bg-danger]="total.percent >= 95">
-        <div class="card-header text-light">TOTAL</div>
-        <div class="card-body">
-          <circle-progress
-          [renderOnClick]="false"
-          [percent]="total.percent"
-          [radius]="60"
-          [space]="-10"
-          [outerStrokeWidth]="10"
-          [outerStrokeColor]="'#000'"
-          [titleColor]="'#FFF'"
-          [unitsColor]="'rgba(255, 255, 255, 0.7)'"
-          [innerStrokeColor]="'rgba(0, 0, 0, 0.2)'"
-          [innerStrokeWidth]="10"
-          [animateTitle]="false"
-          [animationDuration]="300"
-          [showBackground]="false"
-          [responsive]="true"
-          [showSubtitle]="false"
-          [clockwise]="false"
-          ></circle-progress>
-          <div class="text-right text-light disabled">
-            R$ {{ (total.goal || 0) | number:'1.2-2' }}
-            <br />
-            -
-            R$ {{ (total.amount || 0) | number:'1.2-2' }}
+  <div class="main">
+    <ul class="goal-list clearfix">
+      <li *ngIf="total">
+        <article>
+          <header>
+            <h2>{{ total.name }}</h2>
+            <h3>{{ (total.balance || 0) | number:'1.2-2' }}</h3>
+          </header>
+          <div class="progress">
+            <div class="progress-bar progress-bar-striped" [ngStyle]="{ 'width': total.percent + '%', 'background-color': total.color }">
+              {{ total.percent | number:'1.0-0' }}%
+            </div>
           </div>
-        </div>
-        <div class="card-footer text-right text-light">
-          =
-          R$ {{ (total.balance || 0) | number:'1.2-2' }}
-        </div>
-      </div>
-    </div>
-
-    <div class="col item" *ngFor="let goal of goals">
-      <div class="card text-center" [class.over]="goal.percent > 100">
-        <div class="card-header">{{ goal.name }}</div>
-        <div class="card-body">
-          <circle-progress
-          [renderOnClick]="false"
-          [percent]="goal.percent"
-          [radius]="60"
-          [space]="-10"
-          [outerStrokeWidth]="10"
-          [outerStrokeColor]="goal.color"
-          [innerStrokeColor]="'rgba(0, 0, 0, 0.05)'"
-          [innerStrokeWidth]="10"
-          [animateTitle]="false"
-          [animationDuration]="300"
-          [showBackground]="false"
-          [responsive]="true"
-          [showSubtitle]="false"
-          [clockwise]="false"
-          ></circle-progress>
-          <div class="text-right disabled">
-            <span class="text-primary">
-              R$ {{ (goal.goal || 0) | number:'1.2-2' }}
-            </span>
-            <br />
-            <span class="text-danger">
-              -
-              R$ {{ (goal.amount || 0) | number:'1.2-2' }}
-            </span>
-          </div>
-        </div>
-        <div class="card-footer text-right text-success">
-          =
-          R$ {{ (goal.balance || 0) | number:'1.2-2' }}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <ul class="row transactions-list">
-    <ng-container *ngFor="let goal of goals">
-      <li class="col" *ngIf="goal.transactions && goal.transactions.length">
-        <div class="goal-title">
-          <span class="description">{{ goal.name | uppercase }}</span>
-          <span class="amount">{{ (goal.amount || 0) | number:'1.2-2' }}</span>
-        </div>
-        <ul>
-          <li *ngFor="let transaction of goal.transactions">
-            <ng-container *ngIf="transaction.card_name">*</ng-container>
-            <span class="description" title="{{ transaction.date | date:'dd/MM/yyyy' }} - {{ transaction.card_name }}">
-              {{ transaction.description | uppercase }}
-            </span>
-            <span class="amount">{{ (transaction.amount || 0) | number:'1.2-2' }}</span>
-          </li>
-        </ul>
+          <p>
+            {{ (total.amount || 0) | number:'1.2-2' }} de {{ (total.goal || 0) | number:'1.2-2' }}
+          </p>
+        </article>
       </li>
-    </ng-container>
-  </ul>
+      <li *ngFor="let goal of goals">
+        <article>
+          <header>
+            <h2>{{ goal.name }}</h2>
+            <h3>{{ (goal.balance || 0) | number:'1.2-2' }}</h3>
+          </header>
+          <div class="progress">
+            <div class="progress-bar progress-bar-striped" [ngStyle]="{ 'width': goal.percent + '%', 'background-color': goal.color }">
+              {{ goal.percent | number:'1.0-0' }}%
+            </div>
+          </div>
+          <p>
+            {{ (goal.amount || 0) | number:'1.2-2' }} de {{ (goal.goal || 0) | number:'1.2-2' }}
+          </p>
+        </article>
+      </li>
+    </ul>
 
+    <ul class="transactions-list">
+      <ng-container *ngFor="let goal of goals">
+        <li *ngIf="goal.transactions && goal.transactions.length">
+          <div class="goal-title">
+            <span class="description">{{ goal.name | uppercase }}</span>
+            <span class="amount">{{ (goal.amount || 0) | number:'1.2-2' }}</span>
+          </div>
+          <ul>
+            <li *ngFor="let transaction of goal.transactions">
+              <ng-container *ngIf="transaction.card_name">*</ng-container>
+              <span class="description" title="{{ transaction.date | date:'dd/MM/yyyy' }} - {{ transaction.card_name }}">
+                {{ transaction.description | uppercase }}
+              </span>
+              <span class="amount">{{ (transaction.amount || 0) | number:'1.2-2' }}</span>
+            </li>
+          </ul>
+        </li>
+      </ng-container>
+    </ul>
+  </div>
 </div>

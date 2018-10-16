@@ -23,7 +23,7 @@ export class OrganizzeService {
           id:           item.id,
           name:         nameAndGoal[0],
           goal:         parseInt(nameAndGoal[1], 10),
-          color:        this.hexToRgbA(`#${item.color}`, 0.7),
+          color:        `#${item.color}`,
           parent_id:    item.parent_id,
           amount:       0,
           percent:      0,
@@ -37,12 +37,8 @@ export class OrganizzeService {
   }
 
   public getAllTransactions(startDate: Date, endDate: Date) {
-    return forkJoin([
-      this.getTransactions(startDate, endDate),
-      this.getCardsTransactions(startDate, endDate),
-    ])
+    return this.getTransactions(startDate, endDate)
     .pipe(
-      concatAll(),
       concatAll(),
       filter(item => item.amount_cents < 0),
       map((item) => {
@@ -97,12 +93,6 @@ export class OrganizzeService {
     return this.getTransactionsWithPage(start, end, 1, [])
     .pipe(
       concatAll(),
-      filter(item =>
-        !item.paid_credit_card_id
-        && !item.paid_credit_card_invoice_id
-        && !item.credit_card_id
-        && !item.credit_card_invoice_id
-      ),
       map((item) => {
         if (item.total_installments > 1) {
           item.description = `${item.description} ${item.installment}/${item.total_installments}`;
@@ -115,67 +105,7 @@ export class OrganizzeService {
     );
   }
 
-  private getCards() {
-    return this.http
-    .get<Responses.Card[]>(`${BASE_URL}/credit_cards`)
-    .pipe(
-      filter(cards => !!cards.length),
-      concatAll(),
-      // tap(item => console.log('getCards', item)),
-    );
-  }
-
-  private getCardInvoices(card: Responses.Card, startDate: Date, endDate: Date) {
-    return this.http
-    .get<Responses.Invoice[]>(`${BASE_URL}/credit_cards/${card.id}/invoices`)
-    .pipe(
-      filter(invoices => !!invoices.length),
-      concatAll(),
-      filter((item) => {
-        const itemDate = this.parseDate(item.date);
-        const isBetween = startDate <= itemDate && itemDate <= endDate;
-        return isBetween;
-      }),
-      map((item) => {
-        item.card_name = card.name;
-        return item;
-      }),
-      // tap(item => console.log('getCardInvoices', item)),
-    );
-  }
-
-  private getInvoiceTransactions(invoice: Responses.Invoice) {
-    return this.http
-    .get<Responses.Invoice>(`${BASE_URL}/credit_cards/${invoice.credit_card_id}/invoices/${invoice.id}`)
-    .pipe(
-      map(invoice => invoice.transactions),
-      filter(transactions => !!transactions.length),
-      map((transactions) => {
-        return transactions.map((item) => {
-          if (item.total_installments > 1) {
-            item.description = `${item.description} ${item.installment}/${item.total_installments}`;
-          }
-          item.card_name = invoice.card_name;
-          return item;
-        });
-      }),
-      catchError((err) => {
-        console.log(err);
-        return empty();
-      }),
-      // tap(item => console.log('getInvoiceTransactions', item)),
-    );
-  }
-
-  private getCardsTransactions(startDate: Date, endDate: Date) {
-    return this.getCards()
-    .pipe(
-      mergeMap(card => this.getCardInvoices(card, startDate, endDate)),
-      mergeMap(invoice => this.getInvoiceTransactions(invoice)),
-      reduce((all, item) => all.concat(item), [] as Responses.Transaction[]),
-      // tap(item => console.log('getCardsTransactions', item)),
-    );
-  }
+  // TODO: get METAS from API
 
   private formatDate(dateObj: Date) {
     const mm = dateObj.getMonth() + 1;
@@ -193,16 +123,4 @@ export class OrganizzeService {
     return new Date(parseInt(arrDate[0], 10), parseInt(arrDate[1], 10) - 1, parseInt(arrDate[2], 10));
   }
 
-  private hexToRgbA(hex: string, alpha: number) {
-    let color;
-    if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
-      color = hex.substring(1).split('');
-      if (color.length === 3) {
-        color = [color[0], color[0], color[1], color[1], color[2], color[2]];
-      }
-      color = '0x' + color.join('');
-      return 'rgba(' + [(color >> 16) & 255, (color >> 8) & 255, color & 255, alpha].join(',') + ')';
-    }
-    throw new Error('Bad Hex');
-  }
 }

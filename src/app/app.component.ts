@@ -9,7 +9,7 @@ const MONTHS_NAMES = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
 
-const CLOSING_DATE = 10;
+// const CLOSING_DATE = 1;
 const TIMER_RELOAD =  3 * 60;
 
 @Component({
@@ -63,10 +63,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private getCurrentDate() {
-    let currentDate = new Date();
-    if (currentDate.getDate() > CLOSING_DATE) {
+    const currentDate = new Date();
+    /* if (currentDate.getDate() >= CLOSING_DATE) {
       currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-    }
+    } */
     currentDate.setTime(currentDate.getTime() + currentDate.getTimezoneOffset() * 60 * 1000);
     return currentDate;
   }
@@ -155,18 +155,27 @@ export class AppComponent implements OnInit, OnDestroy {
         tap((goals: ViewObject.Goal[]) => {
           this.goals = goals;
           this.total = goals.reduce((total, goalItem) => {
-            const goalSum = (total.goal || 0) + goalItem.goal;
-            const amountSum = (total.amount || 0) + goalItem.amount;
+            const goal = (total.goal || 0) + goalItem.goal;
+            const amount = (total.amount || 0) + goalItem.amount;
+            const percent = (amount * 100) / goal;
+            const balance = goal - amount;
+
+            let color = 'green'; // TODO: Melhorar tonalidades
+            if (percent >= 95) {
+              color = 'red';
+            } else if (percent > 75) {
+              color = 'yellow';
+            }
 
             return {
+              percent,
+              color,
+              amount,
+              goal,
+              balance,
               id: null,
               name: 'Total',
-              color: 'rgba(0, 0, 0, 0.7)',
-              goal: goalSum,
-              amount: amountSum,
-              balance: goalSum - amountSum,
               transactions: [],
-              percent: (amountSum * 100) / goalSum,
             };
           }, {} as ViewObject.Goal);
           // console.log('chainFactory_final', goals);

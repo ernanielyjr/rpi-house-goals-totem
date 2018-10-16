@@ -32,10 +32,26 @@
   }
 }
 
-.progress {
+article .progress {
+  height: 40px;
+
+  .progress-bar {
+    text-align: right;
+    padding-right: 5px;
+    font-weight: bold;
+    text-shadow: 1px 1px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.progress.timer {
   height: 4px;
   justify-content: flex-end;
   border-radius: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999999;
 }
 
 .container-fluid {
@@ -61,72 +77,55 @@ h1 small {
   margin-right: 10px;
 }
 
-.card-list,
-.transactions-list {
-  width: 100%;
-  margin-right: -5px;
-  margin-left: -5px;
-  margin-top: 20px;
-}
-
-.item {
-  word-wrap: break-word;
-  padding-right: 5px;
-  padding-left: 5px;
-  max-width: 20%;
-}
-
-.card.over {
-  border-color: #dc3545;
-
-  .card-header {
-    background-color: #dc3545;
-    border-bottom-color: #dc3545;
-    color: #fff;
-  }
-
-  .card-footer {
-    background-color: #dc3545;
-    border-top-color: #dc3545;
-    color: #fff !important;
-  }
-}
-
-.card.bg-dark {
-  color: #FFF;
-}
-
-.card-header {
-  min-height: 60px;
-  align-items: center;
-  justify-content: center;
+.main {
   display: flex;
-  padding: 5px;
+  margin-top: 30px;
 }
 
-.card-body {
-  padding: 5px;
-}
-
-circle-progress {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.card-footer {
-  padding: 5px;
-}
-
-.transactions-list {
+.goal-list {
+  width: 25%;
   list-style: none;
   padding-left: 0;
+}
+
+article {
+  header {
+    display: flex;
+
+    h2,
+    h3 {
+      font-size: 16px;
+      font-weight: 100 !important;
+    }
+
+    h2 {
+      flex: 1;
+    }
+
+    h3 {
+      text-align: right;
+      width: auto;
+    }
+  }
+
+  p {
+    text-align: right;
+    font-weight: 100;
+    font-size: 13px;
+  }
+}
+
+.transactions-list {
+  width: 75%;
+  list-style: none;
+  padding-left: 20px;
 
   > li {
     font-weight: bold;
     font-size: 13px;
-    max-width: 20%;
-    padding-right: 5px;
-    padding-left: 5px;
+    width: 33.33333%;
+    padding: 0 20px 20px 0;
+    float: left;
   }
 
   .goal-title {
