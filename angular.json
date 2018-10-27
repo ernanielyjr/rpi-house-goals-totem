@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "goals-totem": {
+    "budgets-totem": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -54,18 +54,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "goals-totem:build"
+            "browserTarget": "budgets-totem:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "goals-totem:build:production"
+              "browserTarget": "budgets-totem:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "goals-totem:build"
+            "browserTarget": "budgets-totem:build"
           }
         },
         "lint": {
@@ -82,5 +82,5 @@
       }
     }
   },
-  "defaultProject": "goals-totem"
+  "defaultProject": "budgets-totem"
 }

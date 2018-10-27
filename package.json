@@ -1,5 +1,5 @@
 {
-  "name": "goals-totem",
+  "name": "budgets-totem",
   "version": "0.0.1",
   "scripts": {
     "start": "ng build --prod && node server.js",

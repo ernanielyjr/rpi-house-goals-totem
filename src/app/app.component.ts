@@ -10,7 +10,7 @@ const MONTHS_NAMES = [
 ];
 
 // const CLOSING_DATE = 1;
-const TIMER_RELOAD =  3 * 60;
+const TIMER_RELOAD = 3 * 60;
 
 @Component({
   selector: 'app-root',
@@ -37,8 +37,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   public countdownPercent: number = 100;
   public loading = false;
-  public total: ViewObject.Goal;
-  public goals: ViewObject.Goal[] = [];
+  public total: ViewObject.Budget;
+  public budgets: ViewObject.Budget[] = [];
 
   constructor(
     private organizzeService: OrganizzeService
@@ -121,21 +121,21 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     return Object.keys(item).reduce((full: ViewObject.CategoryHashMap, key: string) => {
-      if (full[key] && full[key].goal) {
+      if (full[key] && full[key].budget) {
         full[key].transactions = item[key].transactions;
         full[key].amount = full[key].transactions.reduce((sum: number, item: ViewObject.Transaction) => {
           return sum + item.amount;
         }, 0);
         full[key].amount = Math.round(full[key].amount * 100) / 100;
-        full[key].balance = full[key].goal - full[key].amount;
-        full[key].percent = (full[key].amount * 100) / full[key].goal;
+        full[key].balance = full[key].budget - full[key].amount;
+        full[key].percent = (full[key].amount * 100) / full[key].budget;
       }
 
       return full;
     }, final);
   }
 
-  private chainFactory(): Observable<ViewObject.Goal[]> {
+  private chainFactory(): Observable<ViewObject.Budget[]> {
     this.resetCountdown();
     this.loading = true;
 
@@ -146,19 +146,19 @@ export class AppComponent implements OnInit, OnDestroy {
       .pipe(
         concatAll(),
         reduce(this.mergeGroups, null as ViewObject.CategoryHashMap),
-        reduce((all: ViewObject.Goal[], categoryHashMap: ViewObject.CategoryHashMap) => {
+        reduce((all: ViewObject.Budget[], categoryHashMap: ViewObject.CategoryHashMap) => {
           const categoryTransaction = Object.keys(categoryHashMap).map((key) => {
-            return categoryHashMap[key] as ViewObject.Goal;
+            return categoryHashMap[key] as ViewObject.Budget;
           });
           return all.concat(categoryTransaction);
-        }, [] as ViewObject.Goal[]),
-        tap((goals: ViewObject.Goal[]) => {
-          this.goals = goals;
-          this.total = goals.reduce((total, goalItem) => {
-            const goal = (total.goal || 0) + goalItem.goal;
-            const amount = (total.amount || 0) + goalItem.amount;
-            const percent = (amount * 100) / goal;
-            const balance = goal - amount;
+        }, [] as ViewObject.Budget[]),
+        tap((budgets: ViewObject.Budget[]) => {
+          this.budgets = budgets;
+          this.total = budgets.reduce((total, budgetItem) => {
+            const budget = (total.budget || 0) + budgetItem.budget;
+            const amount = (total.amount || 0) + budgetItem.amount;
+            const percent = (amount * 100) / budget;
+            const balance = budget - amount;
 
             let color = 'green'; // TODO: Melhorar tonalidades
             if (percent >= 95) {
@@ -171,14 +171,14 @@ export class AppComponent implements OnInit, OnDestroy {
               percent,
               color,
               amount,
-              goal,
+              budget,
               balance,
               id: null,
               name: 'Total',
               transactions: [],
             };
-          }, {} as ViewObject.Goal);
-          // console.log('chainFactory_final', goals);
+          }, {} as ViewObject.Budget);
+          // console.log('chainFactory_final', budgets);
         }),
         finalize(() => {
           this.startCountdown();

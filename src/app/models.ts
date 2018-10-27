@@ -9,16 +9,16 @@ namespace ViewObject {
     card_name?: string;
   }
 
-  export interface Goal extends Responses.Category {
+  export interface Budget extends Responses.Category {
     transactions: Transaction[];
-    goal: number;
+    budget: number;
     amount: number;
     percent: number;
     balance: number;
   }
 
   export interface CategoryHashMap {
-    [key: number]: Goal;
+    [key: number]: Budget;
   }
 }
 
