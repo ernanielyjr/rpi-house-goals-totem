@@ -1,4 +1,4 @@
-namespace ViewObject {
+export namespace ViewObject {
   export interface Transaction {
     id: number;
     description: string;
@@ -9,20 +9,25 @@ namespace ViewObject {
     card_name?: string;
   }
 
-  export interface Budget extends Responses.Category {
+  export interface Budget extends Responses.Budget {
     transactions: Transaction[];
-    budget: number;
-    amount: number;
-    percent: number;
-    balance: number;
-  }
-
-  export interface CategoryHashMap {
-    [key: number]: Budget;
+    category_name: string;
+    category_color: string;
   }
 }
 
-namespace Responses {
+export namespace Responses {
+  export interface Budget {
+    id: number;
+    amount_in_cents: number;
+    category_id: number;
+    date: string;
+    activity_type: number;
+    total: number;
+    predicted_total: number;
+    percentage: string;
+  }
+
   export interface Account {
     id: number;
     name: string;

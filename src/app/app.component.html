@@ -14,58 +14,25 @@
 
   <div class="main">
     <ul class="budget-list clearfix">
-      <li *ngIf="total">
-        <article>
-          <header>
-            <h2>{{ total.name }}</h2>
-            <h3>{{ (total.balance || 0) | number:'1.2-2' }}</h3>
-          </header>
-          <div class="progress">
-            <div class="progress-bar progress-bar-striped" [ngStyle]="{ 'width': total.percent + '%', 'background-color': total.color }">
-              {{ total.percent | number:'1.0-0' }}%
-            </div>
-          </div>
-          <p>
-            {{ (total.amount || 0) | number:'1.2-2' }} de {{ (total.budget || 0) | number:'1.2-2' }}
-          </p>
-        </article>
+      <li *ngIf="dayProgress" class="day-progress" [ngStyle]="{ 'left': dayProgress + '%' }">
+        <div class="today">HOJE</div>
       </li>
-      <li *ngFor="let budget of budgets">
-        <article>
-          <header>
-            <h2>{{ budget.name }}</h2>
-            <h3>{{ (budget.balance || 0) | number:'1.2-2' }}</h3>
-          </header>
-          <div class="progress">
-            <div class="progress-bar progress-bar-striped" [ngStyle]="{ 'width': budget.percent + '%', 'background-color': budget.color }">
-              {{ budget.percent | number:'1.0-0' }}%
-            </div>
-          </div>
-          <p>
-            {{ (budget.amount || 0) | number:'1.2-2' }} de {{ (budget.budget || 0) | number:'1.2-2' }}
-          </p>
-        </article>
-      </li>
-    </ul>
 
-    <ul class="transactions-list">
-      <ng-container *ngFor="let budget of budgets">
-        <li *ngIf="budget.transactions && budget.transactions.length">
-          <div class="budget-title">
-            <span class="description">{{ budget.name | uppercase }}</span>
-            <span class="amount">{{ (budget.amount || 0) | number:'1.2-2' }}</span>
+      <li *ngFor="let budget of budgets" class="budget" [class.total]="budget.id === 0">
+        <article>
+          <header>
+            <h2>{{ budget.category_name }}</h2>
+            <h3>{{ budget.amount_in_cents / 100 | number:'1.2-2' }}</h3>
+          </header>
+          <div class="progress">
+            <div class="progress-bar" [ngStyle]="{ 'width': budget.percentage + '%', 'background-color': '#' + budget.category_color }"></div>
+            <div class="infos">
+              <div class="used">{{ budget.total / 100 | number:'1.2-2' }}</div>
+              <div class="remaining">{{ (budget.amount_in_cents - budget.total) / 100 | number:'1.2-2' }}</div>
+            </div>
           </div>
-          <ul>
-            <li *ngFor="let transaction of budget.transactions">
-              <ng-container *ngIf="transaction.card_name">*</ng-container>
-              <span class="description" title="{{ transaction.date | date:'dd/MM/yyyy' }} - {{ transaction.card_name }}">
-                {{ transaction.description | uppercase }}
-              </span>
-              <span class="amount">{{ (transaction.amount || 0) | number:'1.2-2' }}</span>
-            </li>
-          </ul>
-        </li>
-      </ng-container>
+        </article>
+      </li>
     </ul>
   </div>
 </div>

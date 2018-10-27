@@ -1,10 +1,12 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { forkJoin, Observable, Subscription, timer } from 'rxjs';
-import { concatAll, finalize, map, reduce, take, tap } from 'rxjs/operators';
+import { forkJoin, Subscription, timer } from 'rxjs';
+import { finalize, map, take, tap } from 'rxjs/operators';
+import { ViewObject } from './models';
 import { OrganizzeService } from './service';
 
 const MONTHS_NAMES = [
+  '',
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
@@ -31,8 +33,9 @@ const TIMER_RELOAD = 3 * 60;
 })
 export class AppComponent implements OnInit, OnDestroy {
 
-  private startDate: Date;
-  private endDate: Date;
+  private month: number;
+  private year: number;
+  private dayProgress: number;
   private countdownTimer: Subscription;
 
   public countdownPercent: number = 100;
@@ -45,8 +48,8 @@ export class AppComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.setInitialDates();
-    this.chainFactory().subscribe();
+    this.changeMonth(0);
+    this.chainFactory();
   }
 
   ngOnDestroy() {
@@ -54,41 +57,41 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   public get currentMonth() {
-    return `${MONTHS_NAMES[this.startDate.getMonth()]}/${this.startDate.getFullYear()}`;
+    return `${MONTHS_NAMES[this.month]}/${this.year}`;
   }
 
-  private setInitialDates() {
-    this.startDate = new Date(this.getCurrentDate().getFullYear(), this.getCurrentDate().getMonth(), 1);
-    this.endDate = this.getLastDayOfMonth(this.getCurrentDate());
-  }
+  private changeMonth(month: number = 0) {
+    const today = new Date();
+    const currentMonthYear = new Date(today.getFullYear(), today.getMonth());
+    currentMonthYear.setTime(currentMonthYear.getTime() + currentMonthYear.getTimezoneOffset() * 60 * 1000);
 
-  private getCurrentDate() {
-    const currentDate = new Date();
-    /* if (currentDate.getDate() >= CLOSING_DATE) {
-      currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-    } */
-    currentDate.setTime(currentDate.getTime() + currentDate.getTimezoneOffset() * 60 * 1000);
-    return currentDate;
-  }
+    const baseMonth = this.month || currentMonthYear.getMonth() + 1;
+    const baseYear = this.year || currentMonthYear.getFullYear();
 
-  private changeMonth(month: number) {
-    const baseDate = this.startDate;
-    this.startDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + month, 1);
-    this.endDate = this.getLastDayOfMonth(this.startDate);
+    const baseMonthYear = new Date(baseYear, (baseMonth - 1) + month);
+    baseMonthYear.setTime(baseMonthYear.getTime() + baseMonthYear.getTimezoneOffset() * 60 * 1000);
+
+    if (currentMonthYear.getTime() === baseMonthYear.getTime()) {
+      const totalDays: number = (new Date(currentMonthYear.getFullYear(), currentMonthYear.getMonth() + 1, 0)).getDate();
+      const todayDay: number = (new Date()).getDate();
+      this.dayProgress = (todayDay * 100) / totalDays;
+
+    } else {
+      this.dayProgress = null;
+    }
+
+    this.month = baseMonthYear.getMonth() + 1;
+    this.year = baseMonthYear.getFullYear();
   }
 
   public prevMonth() {
     this.changeMonth(-1);
-    this.chainFactory().subscribe();
+    this.chainFactory();
   }
 
   public nextMonth() {
     this.changeMonth(+1);
-    this.chainFactory().subscribe();
-  }
-
-  private getLastDayOfMonth(baseDate: Date): Date {
-    return new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0);
+    this.chainFactory();
   }
 
   private startCountdown() {
@@ -101,7 +104,7 @@ export class AppComponent implements OnInit, OnDestroy {
         tap(value => this.countdownPercent = (value * 100) / TIMER_RELOAD),
         finalize(() => {
           if (this.countdownPercent === 0) {
-            this.chainFactory().subscribe();
+            this.chainFactory();
           }
         })
       )
@@ -115,76 +118,41 @@ export class AppComponent implements OnInit, OnDestroy {
     this.countdownPercent = 100;
   }
 
-  private mergeGroups(final: ViewObject.CategoryHashMap, item: ViewObject.CategoryHashMap): ViewObject.CategoryHashMap {
-    if (!final) {
-      return item;
-    }
-
-    return Object.keys(item).reduce((full: ViewObject.CategoryHashMap, key: string) => {
-      if (full[key] && full[key].budget) {
-        full[key].transactions = item[key].transactions;
-        full[key].amount = full[key].transactions.reduce((sum: number, item: ViewObject.Transaction) => {
-          return sum + item.amount;
-        }, 0);
-        full[key].amount = Math.round(full[key].amount * 100) / 100;
-        full[key].balance = full[key].budget - full[key].amount;
-        full[key].percent = (full[key].amount * 100) / full[key].budget;
-      }
-
-      return full;
-    }, final);
-  }
-
-  private chainFactory(): Observable<ViewObject.Budget[]> {
+  private chainFactory(): Subscription {
     this.resetCountdown();
     this.loading = true;
 
     return forkJoin([
       this.organizzeService.getCategories(),
-      this.organizzeService.getAllTransactions(this.startDate, this.endDate),
+      this.organizzeService.getBudgets(this.year, this.month),
+      // this.organizzeService.getAllTransactions(this.baseDate),
     ])
       .pipe(
-        concatAll(),
-        reduce(this.mergeGroups, null as ViewObject.CategoryHashMap),
-        reduce((all: ViewObject.Budget[], categoryHashMap: ViewObject.CategoryHashMap) => {
-          const categoryTransaction = Object.keys(categoryHashMap).map((key) => {
-            return categoryHashMap[key] as ViewObject.Budget;
-          });
-          return all.concat(categoryTransaction);
-        }, [] as ViewObject.Budget[]),
-        tap((budgets: ViewObject.Budget[]) => {
-          this.budgets = budgets;
-          this.total = budgets.reduce((total, budgetItem) => {
-            const budget = (total.budget || 0) + budgetItem.budget;
-            const amount = (total.amount || 0) + budgetItem.amount;
-            const percent = (amount * 100) / budget;
-            const balance = budget - amount;
-
-            let color = 'green'; // TODO: Melhorar tonalidades
-            if (percent >= 95) {
-              color = 'red';
-            } else if (percent > 75) {
-              color = 'yellow';
-            }
-
-            return {
-              percent,
-              color,
-              amount,
-              budget,
-              balance,
-              id: null,
-              name: 'Total',
+        map(([categories, budgets]) => {
+          const newBudgets: ViewObject.Budget[] = budgets.map((budget) => {
+            const category = categories.find(item => item.id === budget.category_id);
+            // filtrar transactions
+            let newBudget: ViewObject.Budget;
+            newBudget = {
+              ...budget,
+              category_color: category.color,
+              category_name: category.name,
               transactions: [],
             };
-          }, {} as ViewObject.Budget);
+            return newBudget;
+          });
+          return newBudgets;
+        }),
+        tap((budgets: ViewObject.Budget[]) => {
+          this.budgets = budgets;
           // console.log('chainFactory_final', budgets);
         }),
         finalize(() => {
-          this.startCountdown();
+          // this.startCountdown();
           setTimeout(() => this.loading = false, 300);
         })
-      );
+      )
+      .subscribe();
   }
 
 }

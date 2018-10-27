@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { concatAll, concatMap, filter, map, reduce } from 'rxjs/operators';
+import { concatAll, concatMap, map, reduce } from 'rxjs/operators';
+import { Responses } from './models';
 
 const BASE_URL = '/rest/v2';
 
@@ -11,68 +12,74 @@ export class OrganizzeService {
     private http: HttpClient
   ) { }
 
+  public getBudgets(year?: number, month?: number) {
+    const add = ['', year, month].filter(el => el != null).join('/');
+    return this.http
+      .get<Responses.Budget[]>(`${BASE_URL}/budgets${add}`)
+      .pipe(
+        map(budgets => budgets.sort((a, b) => parseFloat(b.percentage) - parseFloat(a.percentage))),
+        map((budgets) => {
+          const sumAmountInCents = budgets.reduce((sum, budget) => sum + budget.amount_in_cents, 0);
+          const sumTotal = budgets.reduce((sum, budget) => sum + budget.total, 0);
+          const percentageTotal = ((sumTotal * 100) / sumAmountInCents).toFixed(2);
+
+          budgets.unshift({
+            id: 0,
+            category_id: 0,
+            amount_in_cents: sumAmountInCents,
+            total: sumTotal,
+            percentage: percentageTotal,
+            date: null,
+            activity_type: null,
+            predicted_total: null,
+          });
+
+          return budgets;
+        }),
+      );
+  }
+
   public getCategories() {
     return this.http
       .get<Responses.Category[]>(`${BASE_URL}/categories`)
       .pipe(
-        concatAll(),
-        filter(item => item.name.indexOf('|') !== -1),
-        reduce((categories, item: Responses.Category) => {
-          const nameAndBudget = item.name.split('|');
-          categories[item.id] = {
-            id: item.id,
-            name: nameAndBudget[0],
-            budget: parseInt(nameAndBudget[1], 10),
-            color: `#${item.color}`,
-            parent_id: item.parent_id,
-            amount: 0,
-            percent: 0,
-            balance: 0,
-            transactions: [],
-          };
+        map((categories) => {
+          categories.push({
+            id: 0,
+            name: 'Total',
+            color: '000',
+          });
           return categories;
-        }, <ViewObject.CategoryHashMap>{}),
+        })
+        // concatAll(),
         // tap(items => console.log('categories', items)),
       );
   }
 
-  public getAllTransactions(startDate: Date, endDate: Date) {
+  // TODO: ainda usa?
+  /* public getAllTransactions(startDate: Date, endDate: Date) {
     return this.getTransactions(startDate, endDate)
-      .pipe(
-        concatAll(),
-        filter(item => item.amount_cents < 0),
-        map((item) => {
-          const newItem: ViewObject.Transaction = {
-            id: item.id,
-            description: item.description,
-            date: this.parseDate(item.date),
-            paid: item.paid,
-            amount: Math.abs(item.amount_cents) / 100,
-            category_id: item.category_id,
-            card_name: item.card_name,
-          };
-          return newItem;
-        }),
-        reduce(this.groupTransactionsReduce, {} as ViewObject.CategoryHashMap),
-        // tap(items => console.log('chainFactory_transactions', items)),
+    .pipe(
+      concatAll(),
+      filter(item => item.amount_cents < 0),
+      map((item) => {
+        const newItem: ViewObject.Transaction = {
+          id: item.id,
+          description: item.description,
+          date: this.parseDate(item.date),
+          paid: item.paid,
+          amount: Math.abs(item.amount_cents) / 100,
+          category_id: item.category_id,
+          card_name: item.card_name,
+        };
+        return newItem;
+      }),
+      // tap(items => console.log('chainFactory_transactions', items)),
       );
-  }
+    } */
 
-  private groupTransactionsReduce(all: ViewObject.CategoryHashMap, item: ViewObject.Transaction): ViewObject.CategoryHashMap {
-    if (!all[item.category_id]) {
-      all[item.category_id] = <ViewObject.Budget>{};
-    }
-    all[item.category_id].transactions = all[item.category_id].transactions || [];
-    all[item.category_id].transactions.push(item);
-    return all;
-  }
-
-  private getTransactionsWithPage(
-    start: string,
-    end: string,
-    page: number,
-    oldItems: Responses.Transaction[]
-  ): Observable<Responses.Transaction[]> {
+  private getTransactionsWithPage(start: string, end: string, page: number, oldItems: Responses.Transaction[])
+    : Observable<Responses.Transaction[]> {
     return this.http
       .get<Responses.Transaction[]>(`${BASE_URL}/transactions?start_date=${start}&end_date=${end}&page=${page}`)
       .pipe(
