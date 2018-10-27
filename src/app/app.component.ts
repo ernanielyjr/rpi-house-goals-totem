@@ -125,30 +125,54 @@ export class AppComponent implements OnInit, OnDestroy {
     return forkJoin([
       this.organizzeService.getCategories(),
       this.organizzeService.getBudgets(this.year, this.month),
-      // this.organizzeService.getAllTransactions(this.baseDate),
+      this.organizzeService.getAllTransactions(this.year, this.month),
     ])
       .pipe(
-        map(([categories, budgets]) => {
+        map(([categories, budgets, transactions]) => {
           const newBudgets: ViewObject.Budget[] = budgets.map((budget) => {
             const category = categories.find(item => item.id === budget.category_id);
-            // filtrar transactions
+            const budgetTransactions = transactions.filter(transaction => transaction.category_id === budget.category_id);
+
+            const amount = budget.amount_in_cents / 100;
+            const totalUsed = budgetTransactions.reduce((sum, item) => sum + item.amount, 0);
+            const percentage = (totalUsed * 100) / amount;
+
             let newBudget: ViewObject.Budget;
             newBudget = {
-              ...budget,
+              amount,
+              totalUsed,
+              percentage,
+              id: budget.id,
               category_color: category.color,
               category_name: category.name,
-              transactions: [],
+              transactions: budgetTransactions,
             };
             return newBudget;
           });
           return newBudgets;
+        }),
+        map((budgets) => {
+          const amount = budgets.reduce((sum, item) => sum + item.amount, 0);
+          const totalUsed = budgets.reduce((sum, item) => sum + item.totalUsed, 0);
+          const percentage = (totalUsed * 100) / amount;
+
+          budgets.unshift({
+            amount,
+            totalUsed,
+            percentage,
+            id: 0,
+            category_name: 'Total',
+            category_color: '000',
+            transactions: [],
+          });
+          return budgets;
         }),
         tap((budgets: ViewObject.Budget[]) => {
           this.budgets = budgets;
           // console.log('chainFactory_final', budgets);
         }),
         finalize(() => {
-          // this.startCountdown();
+          // TODO: this.startCountdown();
           setTimeout(() => this.loading = false, 300);
         })
       )

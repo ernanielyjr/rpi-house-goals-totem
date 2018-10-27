@@ -22,13 +22,13 @@
         <article>
           <header>
             <h2>{{ budget.category_name }}</h2>
-            <h3>{{ budget.amount_in_cents / 100 | number:'1.2-2' }}</h3>
+            <h3>{{ budget.amount | number:'1.2-2' }}</h3>
           </header>
           <div class="progress">
             <div class="progress-bar" [ngStyle]="{ 'width': budget.percentage + '%', 'background-color': '#' + budget.category_color }"></div>
             <div class="infos">
-              <div class="used">{{ budget.total / 100 | number:'1.2-2' }}</div>
-              <div class="remaining">{{ (budget.amount_in_cents - budget.total) / 100 | number:'1.2-2' }}</div>
+              <div class="used">{{ budget.totalUsed | number:'1.2-2' }}</div>
+              <div class="remaining">{{ budget.amount - budget.totalUsed | number:'1.2-2' }}</div>
             </div>
           </div>
         </article>

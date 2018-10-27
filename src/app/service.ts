@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { concatAll, concatMap, map, reduce } from 'rxjs/operators';
-import { Responses } from './models';
+import { concatAll, concatMap, map, reduce, filter } from 'rxjs/operators';
+import { Responses, ViewObject } from './models';
 
 const BASE_URL = '/rest/v2';
 
@@ -18,24 +18,6 @@ export class OrganizzeService {
       .get<Responses.Budget[]>(`${BASE_URL}/budgets${add}`)
       .pipe(
         map(budgets => budgets.sort((a, b) => parseFloat(b.percentage) - parseFloat(a.percentage))),
-        map((budgets) => {
-          const sumAmountInCents = budgets.reduce((sum, budget) => sum + budget.amount_in_cents, 0);
-          const sumTotal = budgets.reduce((sum, budget) => sum + budget.total, 0);
-          const percentageTotal = ((sumTotal * 100) / sumAmountInCents).toFixed(2);
-
-          budgets.unshift({
-            id: 0,
-            category_id: 0,
-            amount_in_cents: sumAmountInCents,
-            total: sumTotal,
-            percentage: percentageTotal,
-            date: null,
-            activity_type: null,
-            predicted_total: null,
-          });
-
-          return budgets;
-        }),
       );
   }
 
@@ -43,40 +25,29 @@ export class OrganizzeService {
     return this.http
       .get<Responses.Category[]>(`${BASE_URL}/categories`)
       .pipe(
-        map((categories) => {
-          categories.push({
-            id: 0,
-            name: 'Total',
-            color: '000',
-          });
-          return categories;
-        })
-        // concatAll(),
         // tap(items => console.log('categories', items)),
       );
   }
 
-  // TODO: ainda usa?
-  /* public getAllTransactions(startDate: Date, endDate: Date) {
-    return this.getTransactions(startDate, endDate)
-    .pipe(
-      concatAll(),
-      filter(item => item.amount_cents < 0),
-      map((item) => {
-        const newItem: ViewObject.Transaction = {
-          id: item.id,
-          description: item.description,
-          date: this.parseDate(item.date),
-          paid: item.paid,
-          amount: Math.abs(item.amount_cents) / 100,
-          category_id: item.category_id,
-          card_name: item.card_name,
-        };
-        return newItem;
-      }),
-      // tap(items => console.log('chainFactory_transactions', items)),
+  public getAllTransactions(year: number, month: number) {
+    return this.getTransactions(year, month)
+      .pipe(
+        map(transactions => transactions.filter(item => item.amount_cents < 0)),
+        map((transactions) => {
+          const newTransactions: ViewObject.Transaction[] = transactions.map(item => ({
+            id: item.id,
+            description: item.description,
+            date: this.parseDate(item.date),
+            paid: item.paid,
+            amount: Math.abs(item.amount_cents) / 100,
+            category_id: item.category_id,
+            card_name: item.card_name,
+          }));
+          return newTransactions;
+        }),
+        // tap(items => console.log('chainFactory_transactions', items)),
       );
-    } */
+  }
 
   private getTransactionsWithPage(start: string, end: string, page: number, oldItems: Responses.Transaction[])
     : Observable<Responses.Transaction[]> {
@@ -93,9 +64,9 @@ export class OrganizzeService {
       );
   }
 
-  private getTransactions(startDate: Date, endDate: Date) {
-    const start = this.formatDate(startDate);
-    const end = this.formatDate(endDate);
+  private getTransactions(year: number, month: number) {
+    const start = this.formatDate(new Date(year, month - 1, 1));
+    const end = this.formatDate(new Date(year, month , 0));
 
     return this.getTransactionsWithPage(start, end, 1, [])
       .pipe(
@@ -111,8 +82,6 @@ export class OrganizzeService {
         // tap(item => console.log('getTransactions', item)),
       );
   }
-
-  // TODO: get METAS from API
 
   private formatDate(dateObj: Date) {
     const mm = dateObj.getMonth() + 1;

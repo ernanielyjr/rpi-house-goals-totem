@@ -9,7 +9,11 @@ export namespace ViewObject {
     card_name?: string;
   }
 
-  export interface Budget extends Responses.Budget {
+  export interface Budget {
+    id: number;
+    amount: number;
+    totalUsed: number;
+    percentage: number;
     transactions: Transaction[];
     category_name: string;
     category_color: string;
