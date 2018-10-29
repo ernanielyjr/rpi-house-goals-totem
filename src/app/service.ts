@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { concatAll, concatMap, map, reduce, filter } from 'rxjs/operators';
+import { Observable, of, forkJoin, empty } from 'rxjs';
+import { concatAll, concatMap, map, reduce, filter, catchError, mergeMap } from 'rxjs/operators';
 import { Responses, ViewObject } from './models';
 
 const BASE_URL = '/rest/v2';
@@ -30,8 +30,15 @@ export class OrganizzeService {
   }
 
   public getAllTransactions(year: number, month: number) {
-    return this.getTransactions(year, month)
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+
+    return forkJoin([
+      this.getTransactions(startDate, endDate),
+      this.getCardsTransactions(startDate, endDate),
+    ])
       .pipe(
+        map(([transactions, cardsTransactions]) => transactions.concat(cardsTransactions)),
         map(transactions => transactions.filter(item => item.amount_cents < 0)),
         map((transactions) => {
           const newTransactions: ViewObject.Transaction[] = transactions.map(item => ({
@@ -49,8 +56,12 @@ export class OrganizzeService {
       );
   }
 
-  private getTransactionsWithPage(start: string, end: string, page: number, oldItems: Responses.Transaction[])
-    : Observable<Responses.Transaction[]> {
+  private getTransactionsWithPage(
+    start: string,
+    end: string,
+    page: number,
+    oldItems: Responses.Transaction[]
+  ): Observable<Responses.Transaction[]> {
     return this.http
       .get<Responses.Transaction[]>(`${BASE_URL}/transactions?start_date=${start}&end_date=${end}&page=${page}`)
       .pipe(
@@ -64,13 +75,19 @@ export class OrganizzeService {
       );
   }
 
-  private getTransactions(year: number, month: number) {
-    const start = this.formatDate(new Date(year, month - 1, 1));
-    const end = this.formatDate(new Date(year, month , 0));
+  private getTransactions(startDate: Date, endDate: Date) {
+    const start = this.formatDate(startDate);
+    const end = this.formatDate(endDate);
 
     return this.getTransactionsWithPage(start, end, 1, [])
       .pipe(
         concatAll(),
+        filter(item =>
+          !item.paid_credit_card_id
+          && !item.paid_credit_card_invoice_id
+          && !item.credit_card_id
+          && !item.credit_card_invoice_id
+          ),
         map((item) => {
           if (item.total_installments > 1) {
             item.description = `${item.description} ${item.installment}/${item.total_installments}`;
@@ -80,6 +97,68 @@ export class OrganizzeService {
         }),
         reduce((all, item: Responses.Transaction) => all.concat(item), [] as Responses.Transaction[]),
         // tap(item => console.log('getTransactions', item)),
+      );
+  }
+
+  private getCards() {
+    return this.http
+      .get<Responses.Card[]>(`${BASE_URL}/credit_cards`)
+      .pipe(
+        filter(cards => !!cards.length),
+        concatAll(),
+        // tap(item => console.log('getCards', item)),
+      );
+  }
+
+  private getCardInvoices(card: Responses.Card, startDate: Date, endDate: Date) {
+    return this.http
+      .get<Responses.Invoice[]>(`${BASE_URL}/credit_cards/${card.id}/invoices`)
+      .pipe(
+        filter(invoices => !!invoices.length),
+        concatAll(),
+        filter((item) => {
+          const itemDate = this.parseDate(item.date);
+          const isBetween = startDate <= itemDate && itemDate <= endDate;
+          return isBetween;
+        }),
+        map((item) => {
+          item.card_name = card.name;
+          return item;
+        }),
+        // tap(item => console.log('getCardInvoices', item)),
+      );
+  }
+
+  private getInvoiceTransactions(invoice: Responses.Invoice) {
+    return this.http
+      .get<Responses.Invoice>(`${BASE_URL}/credit_cards/${invoice.credit_card_id}/invoices/${invoice.id}`)
+      .pipe(
+        map(invoice => invoice.transactions),
+        filter(transactions => !!transactions.length),
+        map((transactions) => {
+          return transactions.map((item) => {
+            if (item.total_installments > 1) {
+              item.description = `${item.description} ${item.installment}/${item.total_installments}`;
+            }
+            item.card_name = invoice.card_name;
+            return item;
+          });
+        }),
+        catchError((err) => {
+          console.log(err);
+          return empty();
+        }),
+        // tap(item => console.log('getInvoiceTransactions', item)),
+      );
+  }
+
+  private getCardsTransactions(startDate: Date, endDate: Date) {
+    return this.getCards()
+      .pipe(
+        mergeMap(card => this.getCardInvoices(card, startDate, endDate)),
+        mergeMap(invoice => this.getInvoiceTransactions(invoice)),
+        reduce((all, item) => all.concat(item), [] as Responses.Transaction[]),
+        // tap(item => console.log('getCardsTransactions', item)),
       );
   }
 

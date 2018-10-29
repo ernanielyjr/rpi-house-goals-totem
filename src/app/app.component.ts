@@ -35,9 +35,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private month: number;
   private year: number;
-  private dayProgress: number;
   private countdownTimer: Subscription;
 
+  public dayProgress: number;
   public countdownPercent: number = 100;
   public loading = false;
   public total: ViewObject.Budget;
@@ -48,7 +48,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.changeMonth(0);
+    this.changeMonth(0); // TODO: considerar data de corte da fatura
     this.chainFactory();
   }
 
@@ -74,7 +74,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (currentMonthYear.getTime() === baseMonthYear.getTime()) {
       const totalDays: number = (new Date(currentMonthYear.getFullYear(), currentMonthYear.getMonth() + 1, 0)).getDate();
       const todayDay: number = (new Date()).getDate();
-      this.dayProgress = (todayDay * 100) / totalDays;
+      this.dayProgress = (todayDay * 100) / totalDays; // TODO: considerar datas-ciclo de faturas
 
     } else {
       this.dayProgress = null;
@@ -172,7 +172,7 @@ export class AppComponent implements OnInit, OnDestroy {
           // console.log('chainFactory_final', budgets);
         }),
         finalize(() => {
-          // TODO: this.startCountdown();
+          this.startCountdown();
           setTimeout(() => this.loading = false, 300);
         })
       )
