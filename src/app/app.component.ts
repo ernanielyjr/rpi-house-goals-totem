@@ -40,9 +40,8 @@ export class AppComponent implements OnInit, OnDestroy {
   public dayProgress: number;
   public countdownPercent: number = 100;
   public loading = false;
-  public total: ViewObject.Budget;
   public budgets: ViewObject.Budget[] = [];
-  public selectedBudget: number = 0;
+  public selectedBudget: ViewObject.Budget;
 
   constructor(
     private organizzeService: OrganizzeService
@@ -95,8 +94,8 @@ export class AppComponent implements OnInit, OnDestroy {
     this.chainFactory();
   }
 
-  public showTransactions(budgetId: number) {
-    this.selectedBudget = budgetId;
+  public showTransactions(budget: ViewObject.Budget) {
+    this.selectedBudget = budget;
   }
 
   private startCountdown() {
@@ -177,6 +176,7 @@ export class AppComponent implements OnInit, OnDestroy {
           // console.log('chainFactory_final', budgets);
         }),
         finalize(() => {
+          this.selectedBudget = this.budgets.find(b => b.id === 0);
           this.startCountdown();
           setTimeout(() => this.loading = false, 300);
         })

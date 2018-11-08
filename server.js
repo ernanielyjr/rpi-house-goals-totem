@@ -24,6 +24,7 @@ app.use('/rest/v2/', proxy({
   target: 'https://api.organizze.com.br/',
   auth: `${ZZE_USER}:${ZZE_KEY}`,
   changeOrigin: true,
+  proxyTimeout: 30 * 1000, // 30s
   onProxyReq: (proxyReq, req, res) => {
     proxyReq.setHeader('Content-Type', 'application/json; charset=utf-8');
     proxyReq.setHeader('User-Agent', 'MyPlan');

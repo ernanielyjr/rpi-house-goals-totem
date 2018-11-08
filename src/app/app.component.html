@@ -14,11 +14,11 @@
 
   <div class="main">
     <ul class="budget-list clearfix">
-      <li *ngIf="dayProgress" class="day-progress" [ngStyle]="{ 'left': dayProgress + '%' }">
+      <li *ngIf="dayProgress && budgets && budgets.length" class="day-progress" [ngStyle]="{ 'left': dayProgress + '%' }">
         <div class="today">HOJE</div>
       </li>
 
-      <li *ngFor="let budget of budgets" class="budget" [class.total]="budget.id === 0" (click)="showTransactions(budget.id)">
+      <li *ngFor="let budget of budgets" class="budget" [class.total]="budget.id === 0" [class.selected]="!selectedBudget || budget.id === selectedBudget.id || selectedBudget.id === 0" (click)="showTransactions(budget)">
         <article>
           <header>
             <h2>{{ budget.category_name }}</h2>
@@ -35,9 +35,26 @@
       </li>
     </ul>
 
-    <div class="transactions-list" [class.two-columns]="selectedBudget === 0">
+    <div class="transactions-list" [class.two-columns]="!selectedBudget || selectedBudget.id === 0">
+      <div class="text-center mb-3" *ngIf="selectedBudget && selectedBudget.id !== 0">
+        <div class="badge badge-info">
+          Meta prevista:
+          R$ {{ selectedBudget.amount | number:'1.2-2' }}
+        </div>
+        &nbsp;
+        <div class="badge badge-warning">
+          Total gasto:
+          R$ {{ selectedBudget.totalUsed | number:'1.2-2' }}
+        </div>
+        &nbsp;
+        <div class="badge" [class.badge-success]="selectedBudget.amount >= selectedBudget.totalUsed" [class.badge-danger]="selectedBudget.amount < selectedBudget.totalUsed">
+          Valor restante:
+          R$ {{ selectedBudget.amount - selectedBudget.totalUsed | number:'1.2-2' }}
+        </div>
+      </div>
+
       <ng-container *ngFor="let budget of budgets">
-        <ul class="transactions" *ngIf="(budget.id === selectedBudget || selectedBudget === 0) && budget.transactions && budget.transactions.length">
+        <ul class="transactions" *ngIf="(!selectedBudget || budget.id === selectedBudget.id || selectedBudget.id === 0) && budget.transactions && budget.transactions.length">
           <li class="title">{{ budget.category_name }}</li>
           <li *ngFor="let transaction of budget.transactions">
             <div class="details">

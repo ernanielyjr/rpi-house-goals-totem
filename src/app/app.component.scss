@@ -104,6 +104,10 @@ h1 small {
   li.budget {
     margin-top: 20px;
     cursor: pointer;
+
+    &:not(.selected) {
+      opacity: 0.4;
+    }
   }
 
   .total .progress {
