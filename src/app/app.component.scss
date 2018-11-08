@@ -103,6 +103,7 @@ h1 small {
 
   li.budget {
     margin-top: 20px;
+    cursor: pointer;
   }
 
   .total .progress {
@@ -165,64 +166,6 @@ article {
   }
 }
 
-.transactions-list {
-  width: 75%;
-  list-style: none;
-  padding-left: 20px;
-
-  > li {
-    font-weight: bold;
-    font-size: 13px;
-    width: 33.33333%;
-    padding: 0 20px 20px 0;
-    float: left;
-  }
-
-  .budget-title {
-    display: flex;
-    border-bottom: solid 2px #f0f0f0;
-
-    .description {
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .amount {
-      white-space: nowrap;
-      margin-left: 5px;
-      color: red;
-    }
-  }
-
-  ul {
-    width: 100%;
-    list-style: none;
-    padding-left: 0;
-    font-size: 11px;
-    font-weight: normal;
-
-    > li {
-      display: flex;
-      border-bottom: solid 1px #f0f0f0;
-
-      .description {
-        flex: 1;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .amount {
-        font-weight: bold;
-        white-space: nowrap;
-        margin-left: 5px;
-      }
-    }
-  }
-}
-
 .disabled {
   opacity: 0.3;
 }
@@ -230,4 +173,59 @@ article {
 .btn {
   outline: none !important;
   box-shadow: none !important;
+}
+
+.transactions-list {
+  width: 70%;
+
+  &.two-columns {
+    column-count: 2;
+    column-break-inside: avoid;
+  }
+}
+
+.transactions {
+  list-style: none;
+  padding-left: 20px;
+  margin-bottom: 0;
+  display: block;
+  width: 100%;
+
+  li.title {
+    font-weight: bold;
+    text-transform: uppercase;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-top: 10px;
+    background: #f0f0f0;;
+    justify-content: center;
+  }
+
+  li {
+    border-bottom: solid 1px #e0e0e0;
+    display: flex;
+    flex-direction: row;
+    font-size: 12px;
+
+    .details {
+      flex: 1;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      padding-right: 10px;
+    }
+
+    .amount {
+      white-space: nowrap;
+      text-align: right;
+      font-weight: bold;
+    }
+
+    em {
+      font-size: 80%;
+      opacity: 0.8;
+      display: inline-block;
+      margin-left: 4px;
+    }
+  }
 }

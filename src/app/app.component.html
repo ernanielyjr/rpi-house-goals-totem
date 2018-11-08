@@ -18,7 +18,7 @@
         <div class="today">HOJE</div>
       </li>
 
-      <li *ngFor="let budget of budgets" class="budget" [class.total]="budget.id === 0">
+      <li *ngFor="let budget of budgets" class="budget" [class.total]="budget.id === 0" (click)="showTransactions(budget.id)">
         <article>
           <header>
             <h2>{{ budget.category_name }}</h2>
@@ -34,5 +34,22 @@
         </article>
       </li>
     </ul>
+
+    <div class="transactions-list" [class.two-columns]="selectedBudget === 0">
+      <ng-container *ngFor="let budget of budgets">
+        <ul class="transactions" *ngIf="(budget.id === selectedBudget || selectedBudget === 0) && budget.transactions && budget.transactions.length">
+          <li class="title">{{ budget.category_name }}</li>
+          <li *ngFor="let transaction of budget.transactions">
+            <div class="details">
+              {{ transaction.date | date:'dd/MM' }}
+              -
+              <strong>{{ transaction.description }}</strong>
+              <em *ngIf="transaction.card_name">({{ transaction.card_name }})</em>
+            </div>
+            <div class="amount">{{ transaction.amount | number:'1.2-2' }}</div>
+          </li>
+        </ul>
+      </ng-container>
+    </div>
   </div>
 </div>

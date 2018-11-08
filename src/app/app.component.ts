@@ -42,6 +42,7 @@ export class AppComponent implements OnInit, OnDestroy {
   public loading = false;
   public total: ViewObject.Budget;
   public budgets: ViewObject.Budget[] = [];
+  public selectedBudget: number = 0;
 
   constructor(
     private organizzeService: OrganizzeService
@@ -92,6 +93,10 @@ export class AppComponent implements OnInit, OnDestroy {
   public nextMonth() {
     this.changeMonth(+1);
     this.chainFactory();
+  }
+
+  public showTransactions(budgetId: number) {
+    this.selectedBudget = budgetId;
   }
 
   private startCountdown() {
