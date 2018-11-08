@@ -39,7 +39,7 @@ export class OrganizzeService {
     ])
       .pipe(
         map(([transactions, cardsTransactions]) => transactions.concat(cardsTransactions)),
-        map(transactions => transactions.filter(item => item.amount_cents < 0)),
+        map(transactions => transactions.filter(item => item.amount_cents < 0 && item.paid)),
         map((transactions) => {
           const newTransactions: ViewObject.Transaction[] = transactions.map(item => ({
             id: item.id,
