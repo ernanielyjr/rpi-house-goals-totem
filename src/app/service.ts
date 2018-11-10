@@ -41,15 +41,17 @@ export class OrganizzeService {
         map(([transactions, cardsTransactions]) => transactions.concat(cardsTransactions)),
         map(transactions => transactions.filter(item => item.amount_cents < 0 && item.paid)),
         map((transactions) => {
-          const newTransactions: ViewObject.Transaction[] = transactions.map(item => ({
-            id: item.id,
-            description: item.description,
-            date: this.parseDate(item.date),
-            paid: item.paid,
-            amount: Math.abs(item.amount_cents) / 100,
-            category_id: item.category_id,
-            card_name: item.card_name,
-          }));
+          const newTransactions: ViewObject.Transaction[] = transactions
+            .map(item => ({
+              id: item.id,
+              description: item.description,
+              date: this.parseDate(item.date),
+              paid: item.paid,
+              amount: Math.abs(item.amount_cents) / 100,
+              category_id: item.category_id,
+              card_name: item.card_name,
+            }))
+            .sort((a, b) => b.date.getTime() - a.date.getTime());
           return newTransactions;
         }),
         // tap(items => console.log('chainFactory_transactions', items)),
@@ -87,7 +89,7 @@ export class OrganizzeService {
           && !item.paid_credit_card_invoice_id
           && !item.credit_card_id
           && !item.credit_card_invoice_id
-          ),
+        ),
         map((item) => {
           if (item.total_installments > 1) {
             item.description = `${item.description} ${item.installment}/${item.total_installments}`;

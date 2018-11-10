@@ -1,5 +1,5 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { forkJoin, Subscription, timer } from 'rxjs';
 import { finalize, map, take, tap } from 'rxjs/operators';
 import { ViewObject } from './models';
@@ -56,6 +56,31 @@ export class AppComponent implements OnInit, OnDestroy {
     this.resetCountdown();
   }
 
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    switch (event.code) {
+      case 'ArrowUp':
+        this.prevBudget();
+        break;
+      case 'ArrowDown':
+        this.nextBudget();
+        break;
+      case 'ArrowLeft':
+        this.prevMonth();
+        break;
+      case 'ArrowRight':
+        this.nextMonth();
+        break;
+      default:
+        break;
+    }
+
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(event.code) > -1) {
+      event.preventDefault();
+      return false;
+    }
+  }
+
   public get currentMonth() {
     return `${MONTHS_NAMES[this.month]}/${this.year}`;
   }
@@ -82,6 +107,28 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.month = baseMonthYear.getMonth() + 1;
     this.year = baseMonthYear.getFullYear();
+  }
+
+  private changeBudget(direction: number) {
+    const currentId = this.selectedBudget ? this.selectedBudget.id : 0;
+    const currentIndex = this.budgets.map(budget => budget.id).indexOf(currentId) || 0;
+
+    let nextIndex = currentIndex + direction;
+    if (nextIndex >= this.budgets.length) {
+      nextIndex = 0;
+    } else if (nextIndex < 0) {
+      nextIndex = this.budgets.length - 1;
+    }
+
+    this.selectedBudget = this.budgets[nextIndex];
+  }
+
+  private prevBudget() {
+    this.changeBudget(-1);
+  }
+
+  private nextBudget() {
+    this.changeBudget(+1);
   }
 
   public prevMonth() {
