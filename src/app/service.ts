@@ -18,6 +18,13 @@ export class OrganizzeService {
       .get<Responses.Budget[]>(`${BASE_URL}/budgets${add}`)
       .pipe(
         map(budgets => budgets.sort((a, b) => parseFloat(b.percentage) - parseFloat(a.percentage))),
+        map(budgets => budgets.map((item) => {
+          if (item.amount_in_cents < 100) { // Se for menor que 1 real, desconsidera
+            item.amount_in_cents = 0;
+          }
+
+          return item;
+        })),
       );
   }
 
@@ -101,9 +108,9 @@ export class OrganizzeService {
         concatAll(),
         filter(item => !item.paid_credit_card_id),
         map((item) => {
-          // REVIEW: if (item.total_installments > 1) {
-          // REVIEW:   item.description = `${item.description} ${item.installment}/${item.total_installments}`;
-          // REVIEW: }
+          if (item.total_installments > 1) {
+            item.description = `${item.description} ${item.installment}/${item.total_installments}`;
+          }
 
           return item;
         }),

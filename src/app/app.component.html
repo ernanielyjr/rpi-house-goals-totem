@@ -12,7 +12,7 @@
 
 <div class="wrapper">
   <div class="container">
-    <div *ngFor="let budget of budgets" class="budget" [class.over]="(budget.totalUsed * 1.05) >= budget.amount"
+    <div *ngFor="let budget of budgets" class="budget" [class.over]="budget.totalUsed !== 0 && (budget.totalUsed * 1.05) >= budget.amount"
       [ngStyle]="{ 'background-color': '#' + budget.category_color }"
       [class.selected]="!selectedBudget || budget.id === selectedBudget.id || selectedBudget.id === 0"
       (click)="showTransactions(budget)">

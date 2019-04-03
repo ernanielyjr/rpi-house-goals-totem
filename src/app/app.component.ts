@@ -58,7 +58,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
+    // console.log('document:keydown', event);
     switch (event.code) {
+      case 'Escape':
+        this.unselectBudget();
+        break;
       case 'ArrowUp':
         this.prevBudget();
         break;
@@ -121,6 +125,10 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     this.selectedBudget = this.budgets[nextIndex];
+  }
+
+  private unselectBudget() {
+    this.selectedBudget = null;
   }
 
   private prevBudget() {
