@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of, forkJoin, empty } from 'rxjs';
-import { concatAll, concatMap, map, reduce, filter, catchError, mergeMap } from 'rxjs/operators';
+import { concatAll, concatMap, map, reduce, filter, catchError, mergeMap, tap } from 'rxjs/operators';
 import { Responses, ViewObject } from './models';
 
 const BASE_URL = '/rest/v2';
@@ -39,7 +39,20 @@ export class OrganizzeService {
     ])
       .pipe(
         map(([transactions, cardsTransactions]) => transactions.concat(cardsTransactions)),
-        map(transactions => transactions.filter(item => item.amount_cents < 0 && item.paid)),
+        map(transactions => transactions.filter(
+          (item) => {
+            const itemDate = this.parseDate(item.date);
+            const isBetween = item.total_installments === 1 || (startDate <= itemDate && itemDate <= endDate);
+
+            // REVIEW: if (item.description.indexOf('Roupas') !== -1) {
+            // REVIEW:   console.log('---', item.date, item.installment, item.total_installments, isBetween, item.description);
+            // REVIEW: } else if (!isBetween) {
+            // REVIEW:   console.log(item.date, item.installment, item.total_installments, isBetween, item.description);
+            // REVIEW: }
+
+            return item.amount_cents < 0 && (item.paid || item.credit_card_id) && isBetween;
+          }
+        )),
         map((transactions) => {
           const newTransactions: ViewObject.Transaction[] = transactions
             .map(item => ({
@@ -49,7 +62,9 @@ export class OrganizzeService {
               paid: item.paid,
               amount: Math.abs(item.amount_cents) / 100,
               category_id: item.category_id,
-              card_name: item.card_name,
+              credit_card_id: item.credit_card_id,
+              installment: item.installment,
+              total_installments: item.total_installments
             }))
             .sort((a, b) => b.date.getTime() - a.date.getTime());
           return newTransactions;
@@ -84,16 +99,11 @@ export class OrganizzeService {
     return this.getTransactionsWithPage(start, end, 1, [])
       .pipe(
         concatAll(),
-        filter(item =>
-          !item.paid_credit_card_id
-          && !item.paid_credit_card_invoice_id
-          && !item.credit_card_id
-          && !item.credit_card_invoice_id
-        ),
+        filter(item => !item.paid_credit_card_id),
         map((item) => {
-          if (item.total_installments > 1) {
-            item.description = `${item.description} ${item.installment}/${item.total_installments}`;
-          }
+          // REVIEW: if (item.total_installments > 1) {
+          // REVIEW:   item.description = `${item.description} ${item.installment}/${item.total_installments}`;
+          // REVIEW: }
 
           return item;
         }),
@@ -102,12 +112,11 @@ export class OrganizzeService {
       );
   }
 
-  private getCards() {
+  public getCards() {
     return this.http
       .get<Responses.Card[]>(`${BASE_URL}/credit_cards`)
       .pipe(
-        filter(cards => !!cards.length),
-        concatAll(),
+        filter(cards => !!cards.length)
         // tap(item => console.log('getCards', item)),
       );
   }
@@ -123,10 +132,6 @@ export class OrganizzeService {
           const isBetween = startDate <= itemDate && itemDate <= endDate;
           return isBetween;
         }),
-        map((item) => {
-          item.card_name = card.name;
-          return item;
-        }),
         // tap(item => console.log('getCardInvoices', item)),
       );
   }
@@ -139,10 +144,9 @@ export class OrganizzeService {
         filter(transactions => !!transactions.length),
         map((transactions) => {
           return transactions.map((item) => {
-            if (item.total_installments > 1) {
-              item.description = `${item.description} ${item.installment}/${item.total_installments}`;
-            }
-            item.card_name = invoice.card_name;
+            // REVIEW: if (item.total_installments > 1) {
+            // REVIEW:   item.description = `${item.description} ${item.installment}/${item.total_installments}`;
+            // REVIEW: }
             return item;
           });
         }),
@@ -157,6 +161,7 @@ export class OrganizzeService {
   private getCardsTransactions(startDate: Date, endDate: Date) {
     return this.getCards()
       .pipe(
+        concatAll(),
         mergeMap(card => this.getCardInvoices(card, startDate, endDate)),
         mergeMap(invoice => this.getInvoiceTransactions(invoice)),
         reduce((all, item) => all.concat(item), [] as Responses.Transaction[]),

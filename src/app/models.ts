@@ -6,7 +6,10 @@ export namespace ViewObject {
     paid: boolean;
     amount: number;
     category_id: number;
-    card_name?: string;
+    credit_card_id: number;
+    credit_card_name?: string;
+    total_installments: number;
+    installment: number;
   }
 
   export interface Budget {
@@ -76,7 +79,6 @@ export namespace Responses {
     previous_balance_cents: number;
     credit_card_id: number;
     transactions?: Transaction[];
-    card_name?: string;
   }
 
   export interface Transaction {
@@ -103,6 +105,5 @@ export namespace Responses {
     oposite_account_id?: number;
     created_at: string;
     updated_at: string;
-    card_name?: string;
   }
 }

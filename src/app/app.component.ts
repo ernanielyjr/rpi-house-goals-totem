@@ -1,5 +1,5 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, OnDestroy, OnInit, HostListener } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { forkJoin, Subscription, timer } from 'rxjs';
 import { finalize, map, take, tap } from 'rxjs/operators';
 import { ViewObject } from './models';
@@ -175,14 +175,33 @@ export class AppComponent implements OnInit, OnDestroy {
 
     return forkJoin([
       this.organizzeService.getCategories(),
+      this.organizzeService.getCards(),
       this.organizzeService.getBudgets(this.year, this.month),
       this.organizzeService.getAllTransactions(this.year, this.month),
     ])
       .pipe(
-        map(([categories, budgets, transactions]) => {
+        map(([categories, cards, budgets, transactions]) => {
+          const uniqueTransactions: ViewObject.Transaction[] = [];
+          for (let i = 0; i < transactions.length; i++) {
+            const transaction = transactions[i];
+            const alreadyExists = !!uniqueTransactions.find(item => item.id === transaction.id);
+            if (!alreadyExists) {
+              uniqueTransactions.push(transaction);
+            }
+          }
+
           const newBudgets: ViewObject.Budget[] = budgets.map((budget) => {
             const category = categories.find(item => item.id === budget.category_id);
-            const budgetTransactions = transactions.filter(transaction => transaction.category_id === budget.category_id);
+
+            const budgetTransactions = uniqueTransactions
+              .filter(transaction => transaction.category_id === budget.category_id)
+              .map((transaction) => {
+                const card = cards.find(card => card.id === transaction.credit_card_id);
+                if (card) {
+                  transaction.credit_card_name = card.name;
+                }
+                return transaction;
+              });
 
             const amount = budget.amount_in_cents / 100;
             const totalUsed = budgetTransactions.reduce((sum, item) => sum + item.amount, 0);
@@ -213,7 +232,7 @@ export class AppComponent implements OnInit, OnDestroy {
             percentage,
             id: 0,
             category_name: 'Total',
-            category_color: '000',
+            category_color: '555',
             transactions: [],
           });
           return budgets;
@@ -231,4 +250,8 @@ export class AppComponent implements OnInit, OnDestroy {
       .subscribe();
   }
 
+  public formatRemaining(budget: ViewObject.Budget) {
+    const result = budget.amount - budget.totalUsed;
+    return result < 0 ? 0 : result;
+  }
 }
