@@ -15,6 +15,11 @@ body {
 body {
   position: relative;
   background: #000;
+  overflow: -moz-scrollbars-none;
+
+  &::-webkit-scrollbar {
+    width: 0 !important;
+  }
 
   &::before {
     content: "";
