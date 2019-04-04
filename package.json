@@ -2,7 +2,8 @@
   "name": "budgets-totem",
   "version": "0.0.1",
   "scripts": {
-    "start": "ng build --prod && node server.js",
+    "start": "node server.js",
+    "build": "ng build --prod",
     "serve-dev": "concurrently --kill-others \"npm run frontend\" \"npm run backend\"",
     "frontend": "ng build --watch",
     "backend": "nodemon ./server.js --watch ./dist --watch server.js --watch package.json"
