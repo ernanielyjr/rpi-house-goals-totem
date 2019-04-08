@@ -4,7 +4,7 @@ import { Observable, of, forkJoin, empty } from 'rxjs';
 import { concatAll, concatMap, map, reduce, filter, catchError, mergeMap, tap } from 'rxjs/operators';
 import { Responses, ViewObject } from './models';
 
-const BASE_URL = '/rest/v2';
+const BASE_URL = '/api/organizze';
 
 @Injectable()
 export class OrganizzeService {

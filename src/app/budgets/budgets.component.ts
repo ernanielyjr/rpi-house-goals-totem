@@ -2,8 +2,8 @@ import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { forkJoin, Subscription, timer } from 'rxjs';
 import { finalize, map, take, tap } from 'rxjs/operators';
-import { ViewObject } from './models';
-import { OrganizzeService } from './service';
+import { ViewObject } from '../models';
+import { OrganizzeService } from '../service';
 
 const MONTHS_NAMES = [
   '',
@@ -15,9 +15,9 @@ const MONTHS_NAMES = [
 const TIMER_RELOAD = 3 * 60;
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+  selector: 'app-budgets',
+  templateUrl: './budgets.component.html',
+  styleUrls: ['./budgets.component.scss'],
   animations: [
     trigger('enterAnimation', [
       transition(':enter', [
@@ -31,7 +31,7 @@ const TIMER_RELOAD = 3 * 60;
     ])
   ]
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class BudgetsComponent implements OnInit, OnDestroy {
 
   private month: number;
   private year: number;
