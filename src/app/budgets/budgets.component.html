@@ -1,7 +1,7 @@
 <div *ngIf="loading" class="loading" [@enterAnimation]>loading...</div>
 
-<div class="progress timer">
-  <div class="progress-bar bg-success" [ngStyle]="{ 'width': countdownPercent + '%' }"></div>
+<div class="progress-custom timer">
+  <div class="progress-custom-bar" [ngStyle]="{ 'width': countdownPercent + '%' }"></div>
 </div>
 
 <h3>
@@ -11,7 +11,7 @@
 </h3>
 
 <div class="wrapper">
-  <div class="container">
+  <div class="container-custom">
     <div *ngFor="let budget of budgets" class="budget" [class.over]="budget.totalUsed !== 0 && (budget.totalUsed * 1.05) >= budget.amount"
       [ngStyle]="{ 'background-color': '#' + budget.category_color }"
       [class.selected]="!selectedBudget || budget.id === selectedBudget.id || selectedBudget.id === 0"
@@ -27,7 +27,7 @@
         <div class="remaining">{{ formatRemaining(budget) | number:'1.0-0' }}</div>
       </div>
 
-      <div class="progress">
+      <div class="progress-custom">
         <div [ngStyle]="{ 'width': budget.percentage + '%' }"></div>
       </div>
     </div>
@@ -35,15 +35,15 @@
 
   <div class="transactions-list" [class.two-columns]="!selectedBudget || selectedBudget.id === 0">
     <div class="sumary" *ngIf="selectedBudget && selectedBudget.id !== 0">
-      <div class="badge info">
+      <div class="badge-custom info">
         <small>Meta prevista</small>
         {{ selectedBudget.amount | number:'1.2-2' }}
       </div>
-      <div class="badge warning">
+      <div class="badge-custom warning">
         <small>Total gasto</small>
         {{ selectedBudget.totalUsed | number:'1.2-2' }}
       </div>
-      <div class="badge" [class.success]="selectedBudget.amount >= selectedBudget.totalUsed"
+      <div class="badge-custom" [class.success]="selectedBudget.amount >= selectedBudget.totalUsed"
         [class.danger]="selectedBudget.amount < selectedBudget.totalUsed">
         <small>Restante</small>
         {{ selectedBudget.amount - selectedBudget.totalUsed | number:'1.2-2' }}

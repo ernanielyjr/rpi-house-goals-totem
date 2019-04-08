@@ -38,7 +38,7 @@
   }
 }
 
-.progress.timer {
+.progress-custom.timer {
   height: 6px;
   justify-content: flex-end;
   border-radius: 0;
@@ -49,7 +49,7 @@
   z-index: 999998;
   background: rgba(0, 0, 0, 0.8);
 
-  .progress-bar {
+  .progress-custom-bar {
     background: rgba(255, 255, 255, 0.07);
     height: 100%;
   }
@@ -82,7 +82,7 @@ h3 {
   flex-direction: column;
 }
 
-.container {
+.container-custom {
   display: flex;
   flex-wrap: wrap;
 
@@ -115,7 +115,7 @@ h3 {
       }
     }
 
-    .progress {
+    .progress-custom {
       height: 5px;
       background: rgba(0, 0, 0, 0.1);
       border-radius: 5px;
@@ -160,7 +160,7 @@ h3 {
     text-align: center;
     overflow: hidden;
 
-    .badge {
+    .badge-custom {
       padding: 20px 10px;
       flex: 1;
 

@@ -8,6 +8,8 @@ import { NgbCarouselModule, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { BudgetsComponent } from './budgets/budgets.component';
 import { RootComponent } from './root/root.component';
 import { OrganizzeService } from './service';
+import { TrelloComponent } from './trello/trello.component';
+import { WeatherComponent } from './weather/weather.component';
 
 registerLocaleData(pt, 'pt-BR');
 
@@ -15,6 +17,8 @@ registerLocaleData(pt, 'pt-BR');
   declarations: [
     RootComponent,
     BudgetsComponent,
+    WeatherComponent,
+    TrelloComponent,
   ],
   imports: [
     BrowserModule,
