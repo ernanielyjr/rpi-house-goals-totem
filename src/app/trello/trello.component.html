@@ -1,1 +1,12 @@
-trello
+<ng-container *ngIf="loading">carregando</ng-container>
+
+<div class="trello-lists" *ngIf="!loading && lists && lists.length">
+  <div class="trello-list" *ngFor="let list of lists">
+    <strong>{{ list.name }}</strong>
+    <div class="trello-cards" *ngIf="list.cards && list.cards.length">
+      <div class="trello-card" *ngFor="let card of list.cards">
+        {{ card.name }}
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+.trello-lists {
+  display: flex;
+
+  .trello-list {
+    flex: 1;
+    margin: 15px;
+
+    strong {
+      display: block;
+      text-align: center;
+      padding: 10px 15px;
+      background: rgba(0, 0, 0, 0.7);
+      font-weight: 300;
+      font-size: 20px;
+    }
+
+    .trello-cards {
+      display: flex;
+      flex-direction: column;
+
+      .trello-card {
+        margin: 5px 0;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 10px 15px;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 100;
+        font-size: 20px;
+      }
+    }
+  }
+}
