@@ -66,6 +66,7 @@ export class WeatherComponent implements OnInit {
   public nextDays: any[];
   public types = TYPES;
   public greet: string;
+  public loading = false;
 
   constructor(
     private http: HttpClient
@@ -81,10 +82,12 @@ export class WeatherComponent implements OnInit {
 
   private async loadWeather() {
     // TODO: improve loading
+    this.loading = true;
     const response = await this.http.get('/api/weather/novo-hamburgo').toPromise() as any;
     this.nextDays = response.daily.data.slice(0, 7);
     this.today = this.nextDays.shift();
     this.greet = this.getGreet();
+    this.loading = false;
   }
 
   private getGreet() {
