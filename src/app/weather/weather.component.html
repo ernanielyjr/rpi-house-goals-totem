@@ -1,8 +1,32 @@
 <ng-container *ngIf="loading">carregando</ng-container>
 
-<div class="weather" *ngIf="!loading && weather">
-  <div class="currently">{{ weather.currently | json }}</div>
-  <div class="daily">
-    <div class="one-day" *ngFor="let day of weather.daily.data">{{ day | json }}</div>
+<div class="weather" *ngIf="!loading && today">
+  <div class="widget today">
+    <h3>{{ greet }}</h3>
+    <h4>A previsão para hoje é:</h4>
+    <i class="wu wu-white wu-128 {{ types[today.icon].icon }}"></i>
+    <div class="min-max">
+      <div class="min">{{ today.temperatureLow | number:'1.0-0' }}&deg;</div>
+      <div class="max">{{ today.temperatureHigh | number:'1.0-0' }}&deg;</div>
+    </div>
+    <h4>{{ today.summary }}</h4>
+    <div class="info">
+      <i class="fas fa-tint"></i>
+      {{ today.humidity * 100| number:'1.0-0' }}%
+      &nbsp;
+      <i class="fas fa-wind"></i>
+      {{ today.windSpeed| number:'1.0-0' }} km/h
+    </div>
+  </div>
+  <div class="next-days" *ngIf="nextDays && nextDays.length">
+    <div class="widget" *ngFor="let day of nextDays">
+      <h3>{{ day.time * 1000 | date:'E' }}</h3>
+      <i class="wu wu-white wu-64 {{ types[day.icon].icon }}"></i>
+      <div class="min-max">
+        <div class="min">{{ today.temperatureLow | number:'1.0-0' }}&deg;</div>
+        <div class="max">{{ today.temperatureHigh | number:'1.0-0' }}&deg;</div>
+      </div>
+      <h4>{{ day.summary }}</h4>
+    </div>
   </div>
 </div>

@@ -5,6 +5,14 @@
     flex: 1;
     margin: 15px;
 
+    &:first-child strong {
+      background: rgba(220, 53, 109, 0.8);
+    }
+
+    &:last-child strong {
+      background: rgba(64, 185, 45, 0.8);
+    }
+
     strong {
       display: block;
       text-align: center;

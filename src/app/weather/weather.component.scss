@@ -1,28 +1,90 @@
 .weather {
   height: 100%;
   display: flex;
-  .currently {
-    width: calc(25% - 15px);
-    background: blue;
+
+  .widget {
+    background: rgba(0, 0, 0, 0.8);
     overflow: hidden;
-    height: calc(100% - 15px);
-    margin: 15px 0 0 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    padding: 10px;
+    box-sizing: border-box;
+    text-align: center;
+
+    h3 {
+      margin: 0;
+      font-weight: 100;
+      text-transform: uppercase;
+    }
+
+    h4 {
+      font-weight: 300;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .min-max {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 300;
+
+      & > div {
+        margin: 0 5px;
+      }
+
+      .min {
+        color: #17a2b8;
+      }
+
+      .max {
+        color: #dc356d;
+      }
+    }
+
+    .info {
+      small {
+        display: block;
+      }
+    }
+
+    &.today {
+      width: calc(35% - 15px);
+      height: calc(100% - 15px);
+      margin: 15px 0 0 15px;
+
+      h3,
+      .min-max {
+        font-size: 30px;
+      }
+    }
   }
 
-  .daily {
-    width: calc(75% - 15px);
+  .next-days {
+    width: calc(65% - 15px);
     height: calc(100% - 10px);
     overflow: hidden;
     display: flex;
     flex-wrap: wrap;
     margin: 10px 15px 0 0;
 
-    .one-day {
-      background: red;
+    .widget {
       height: calc(50% - 5px);
-      width: calc(25% - 5px);
+      width: calc(33.33333% - 5px);
       margin: 5px 0 0 5px;
-      overflow: hidden;
+      opacity: 0.8;
+
+      h3,
+      .min-max {
+        font-size: 22px;
+      }
+
+      h4 {
+        font-size: 11px;
+        height: 26px;
+      }
     }
   }
 }
