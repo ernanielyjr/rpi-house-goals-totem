@@ -73,9 +73,14 @@ export class WeatherComponent implements OnInit {
 
   ngOnInit() {
     this.loadWeather();
+
+    setInterval(() => {
+      this.loadWeather();
+    }, 10 * 60 * 1000);
   }
 
   private async loadWeather() {
+    // TODO: improve loading
     const response = await this.http.get('/api/weather/novo-hamburgo').toPromise() as any;
     this.nextDays = response.daily.data.slice(0, 7);
     this.today = this.nextDays.shift();

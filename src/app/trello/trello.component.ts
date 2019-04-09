@@ -18,10 +18,14 @@ export class TrelloComponent implements OnInit {
 
   ngOnInit() {
     this.getBoard();
+
+    setInterval(() => {
+      this.getBoard();
+    }, 1 * 60 * 1000);
   }
 
   private async getBoard() {
-    this.loading = true;
+    this.loading = true; // TODO: improve loading
     const response = await this.http.get('/api/trello').toPromise() as any;
     const filteredLists = response.lists.filter(list => LISTS_TO_SHOW.indexOf(list.name) !== -1) as any[];
     const filledLists = filteredLists.map((list) => {
