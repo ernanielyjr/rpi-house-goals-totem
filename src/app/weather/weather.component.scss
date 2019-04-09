@@ -1,0 +1,28 @@
+.weather {
+  height: 100%;
+  display: flex;
+  .currently {
+    width: calc(25% - 15px);
+    background: blue;
+    overflow: hidden;
+    height: calc(100% - 15px);
+    margin: 15px 0 0 15px;
+  }
+
+  .daily {
+    width: calc(75% - 15px);
+    height: calc(100% - 10px);
+    overflow: hidden;
+    display: flex;
+    flex-wrap: wrap;
+    margin: 10px 15px 0 0;
+
+    .one-day {
+      background: red;
+      height: calc(50% - 5px);
+      width: calc(25% - 5px);
+      margin: 5px 0 0 5px;
+      overflow: hidden;
+    }
+  }
+}

@@ -1,1 +1,8 @@
-weather
+<ng-container *ngIf="loading">carregando</ng-container>
+
+<div class="weather" *ngIf="!loading && weather">
+  <div class="currently">{{ weather.currently | json }}</div>
+  <div class="daily">
+    <div class="one-day" *ngFor="let day of weather.daily.data">{{ day | json }}</div>
+  </div>
+</div>

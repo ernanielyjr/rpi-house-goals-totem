@@ -43,7 +43,7 @@ app.use('/api/trello', proxy({
 
 
 // WEATHER =====================================
-app.use('/api/darksky/novo-hamburgo', proxy({
+app.use('/api/weather/novo-hamburgo', proxy({
   target: `https://api.darksky.net/forecast/${DARKSKY_KEY}/-29.686505199999996,-51.127883000000004/`,
   changeOrigin: true,
   proxyTimeout: 30 * 1000,
