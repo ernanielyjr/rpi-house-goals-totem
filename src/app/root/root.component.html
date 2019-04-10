@@ -1,11 +1,9 @@
 <ngb-carousel>
   <ng-template ngbSlide>
-    <div class="weather-trello">
-      <app-weather></app-weather>
-      <app-trello></app-trello>
+    <div class="dashboard">
+      <app-budgets class="item budgets"></app-budgets>
+      <app-weather class="item weather"></app-weather>
+      <app-trello class="item trello"></app-trello>
     </div>
-  </ng-template>
-  <ng-template ngbSlide>
-    <app-budgets></app-budgets>
   </ng-template>
 </ngb-carousel>

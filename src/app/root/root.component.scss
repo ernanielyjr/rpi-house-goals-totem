@@ -14,12 +14,18 @@
   }
 }
 
-.weather-trello {
+.dashboard {
   height: 100%;
+  display: flex;
+  flex-direction: column;
 
-  app-weather {
-    height: 30%;
-    margin-bottom: 40px;
+  > .item {
     display: block;
+    overflow: hidden;
+    padding: 10px;
+
+    &.trello {
+      flex: 1;
+    }
   }
 }

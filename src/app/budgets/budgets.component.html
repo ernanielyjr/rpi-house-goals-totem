@@ -1,8 +1,8 @@
 <div *ngIf="loading" class="loading" [@enterAnimation]>carregando...</div>
 
-<div class="progress-custom timer">
+<!-- <div class="progress-custom timer">
   <div class="progress-custom-bar" [ngStyle]="{ 'width': countdownPercent + '%' }"></div>
-</div>
+</div> -->
 
 <h3>
   <a href="javascript:void(0);" (click)="prevMonth()">&larr;</a>
@@ -33,7 +33,7 @@
     </div>
   </div>
 
-  <div class="transactions-list" [class.two-columns]="!selectedBudget || selectedBudget.id === 0">
+  <!-- <div class="transactions-list" [class.two-columns]="!selectedBudget || selectedBudget.id === 0">
     <div class="sumary" *ngIf="selectedBudget && selectedBudget.id !== 0">
       <div class="badge-custom info">
         <small>Meta prevista</small>
@@ -65,5 +65,5 @@
         </li>
       </ul>
     </ng-container>
-  </div>
+  </div> -->
 </div>
