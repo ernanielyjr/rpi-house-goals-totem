@@ -23,8 +23,8 @@
       <h3>{{ day.time * 1000 | date:'E' }}</h3>
       <i class="wu wu-white wu-64 {{ types[day.icon].icon }}"></i>
       <div class="min-max">
-        <div class="min">{{ today.temperatureLow | number:'1.0-0' }}&deg;</div>
-        <div class="max">{{ today.temperatureHigh | number:'1.0-0' }}&deg;</div>
+        <div class="min">{{ day.temperatureLow | number:'1.0-0' }}&deg;</div>
+        <div class="max">{{ day.temperatureHigh | number:'1.0-0' }}&deg;</div>
       </div>
       <h4>{{ day.summary }}</h4>
     </div>
